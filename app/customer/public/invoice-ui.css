@@ -214,3 +214,5 @@ body[data-page="verify"] .module-heading{margin:0 0 28px}
 .invoice-issue-dialog .document-actions{flex-wrap:wrap}
 .invoice-issue-dialog .document-actions #pdf-open{font-size:12px;text-decoration:none;margin-left:auto}
 .invoice-issue-dialog .document-actions>.help{flex-basis:100%;text-align:right;margin-top:0!important}
+
+#setup-plain-preview{display:block}#setup-plain-preview h3{margin:0 0 10px}#setup-plain-preview p{margin:8px 0}#setup-plain-preview .mono{overflow-wrap:anywhere}
