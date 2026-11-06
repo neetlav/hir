@@ -38,3 +38,9 @@ tmp/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Internal documentation remains local; public docs require individual review.
+/docs/internal/
+/docs/*AUDIT*
+/docs/*WORKING*
+/docs/*PLAN*

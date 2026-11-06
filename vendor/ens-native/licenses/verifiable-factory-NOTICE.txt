@@ -1,0 +1,2 @@
+Upstream: https://github.com/ensdomains/verifiable-factory/tree/c1090aec465ab30d494c96bd7d2a147b4f0b0173
+The pinned repository contains no standalone LICENSE file. The retained embedded upstream sources declare SPDX-License-Identifier: MIT. See the unmodified source metadata and the included ENS distribution and OpenZeppelin license notices.
