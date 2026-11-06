@@ -6,7 +6,8 @@ export function chainDiagnostic(error,operation,id=crypto.randomUUID()){
   seen.add(e);const message=String(e.message??'')+' '+String(e.details??'');
   if(/too many subrequests/i.test(message))category='subrequest-limit';
   else if(category==='chain-service-unavailable'){
-   if(e.status===429||/rate limit|too many requests/i.test(message))category='rpc-rate-limit';
+   if(e.code===-32005||e.name==='LimitExceededRpcError'||/request exceeds defined limit/i.test(message))category='rpc-provider-limit';
+   else if(e.status===429||/rate limit|too many requests/i.test(message))category='rpc-rate-limit';
    else if(/block not found|unknown block|header not found/i.test(message))category='rpc-block-unavailable';
    else if(e.name==='TimeoutError'||/timeout|timed out/i.test(message))category='rpc-timeout';
    else if(/insufficient funds|insufficient.*gas balance/i.test(message))category='insufficient-gas-balance';

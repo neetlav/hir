@@ -5,7 +5,7 @@ import {Workspace} from './service.mjs';
 import {WorkspaceWallet} from './wallet.mjs';
 import * as p from '../src/protocol.mjs';
 
-export class AccessError extends Error {constructor(message,status=403){super(message);this.status=status;}}
+export class AccessError extends Error {constructor(message,status=403,options){super(message,options);this.status=status;}}
 const need=(ok,message,status)=>{if(!ok)throw new AccessError(message,status);};
 export const unresolved=r=>['awaiting-wallet','wallet-dispatched','submitted','confirming'].includes(r.status);
 const random=()=>randomBytes(32).toString('hex');
@@ -28,12 +28,12 @@ export class WalletSessions {
   const c=s?.challenge;if(s){s.challenge=null;this.save(s);}need(c&&c.expires>this.now()&&c.epoch===s.epoch,'Wallet challenge expired or already used',401);
   let signer;try{signer=await recoverMessageAddress({message:c.message,signature});}catch{throw new AccessError('Wallet signature did not authenticate this request',401);}
   need(p.eq(signer,c.account),'Wallet signature does not match the challenged account',401);
-  let authority;try{authority=await this.operator({org:c.org,account:c.account});}catch{throw new AccessError('Current ENS operator verification is unavailable; no access was granted',503);}
+  let authority;try{authority=await this.operator({org:c.org,account:c.account});}catch(cause){throw new AccessError('Current ENS operator verification is unavailable; no access was granted',503,{cause});}
   need(c.epoch===s.epoch&&s.expires>this.now(),'Wallet challenge was invalidated',401);need(authority.allowed,'This wallet is not a current organization owner or Agents resolver delegate',403);
   s.account=c.account;s.org=c.org;s.contextId=null;s.authority=authority;s.expires=this.now()+this.ttl;this.save(s);return this.public(s);
  }
  public(s){return{authenticated:Boolean(s?.account&&s.expires>this.now()),account:s?.account??null,org:s?.org??null,contextId:s?.contextId??null,expiresAt:s?.account?new Date(s.expires).toISOString():null};}
- async require(s){const guard=this.guard(s);guard();let authority;try{authority=await this.operator({org:s.org,account:s.account});}catch{guard();throw new AccessError('Current ENS operator verification is temporarily unavailable. Your wallet sign-in is retained; retry when verification recovers.',503);}guard();if(!authority.allowed){this.logout(s);throw new AccessError('Current ENS operator permission was removed',403);}s.authority=authority;return guard;}
+ async require(s){const guard=this.guard(s);guard();let authority;try{authority=await this.operator({org:s.org,account:s.account});}catch(cause){guard();throw new AccessError('Current ENS operator verification is temporarily unavailable. Your wallet sign-in is retained; retry when verification recovers.',503,{cause});}guard();if(!authority.allowed){this.logout(s);throw new AccessError('Current ENS operator permission was removed',403);}s.authority=authority;return guard;}
 }
 
 // These adapters never read or write the preserved global selection.json.
