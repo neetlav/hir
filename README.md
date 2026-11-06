@@ -4,9 +4,9 @@ An ENSv2-powered evidence layer for verifiable records, actions, and authority.
 
 ## Invoice evidence contracts and verification
 
-This snapshot contains the active shared invoice Evidence Ledger, structured-signature protocol, native ENS discovery, historical evidence verification, compiler entry point and isolated security tests. It publishes pre-existing local development for review. The invoice customer application is included; Agents are not part of this repository snapshot.
+This repository contains the shared invoice Evidence Ledger, structured-signature protocol, native ENS discovery, historical evidence verification, compiler entry points and isolated security tests. The customer application selects the guarded registered-name ledger. Earlier contracts, configuration and tests remain preserved as references; earlier ledger availability is outside the revised application.
 
-An organization configures an existing ENSv2 resolver to authorize an issuer and the approved receiving address, payment asset and network. An invoice statement binds the exact final document hash, protected details, namespace, policy, revision, predecessor and expiry. One issuer signature and one direct publication transaction accept the evidence and create its ENS discovery record atomically. There is no per-invoice ENS token, resolver deployment or relayer requirement.
+An organization configures its ENSv2 hierarchy and existing resolver once to authorize an issuer and approved receiving address, payment asset and network. Each new invoice is a genuine registered ENS token under two reusable subregistries. The issuer registers its name, signs the exact final document statement, then publishes evidence: two direct wallet transactions and one EIP-712 signature. Evidence acceptance and the ENS discovery pointer are atomic in the publication transaction. There is no per-invoice registry/resolver deployment or relayer. See [registered-name protocol and live acceptance gate](docs/REGISTERED-INVOICE.md).
 
 ## Install and validate
 
@@ -20,7 +20,7 @@ npm test
 
 Compilation uses pinned solc and local OpenZeppelin imports. It prints a compilation summary without deploying a contract. Tests use an unforked Hardhat EVM (chain ID 31337), ephemeral accounts and pinned official ENS bytecodes. They require no wallet, credentials, Sepolia funds or external RPC. The installation requires access to the npm registry.
 
-The test fixture is limited to the active ledger. It does not depend on an earlier invoice application or ledger. Its document bytes are opaque fingerprint fixtures: these tests check byte integrity, not PDF rendering or business content.
+The original fixture checks the preserved resolver-only ledger. Registered-name tests additionally deploy official UserRegistry proxies, enforce the genuine hierarchy and use real generated PDF bytes. Run the explicit registered-name and Worker/browser commands in the protocol guide; the original npm test command retains the earlier regression coverage.
 
 ## Independent verification API
 

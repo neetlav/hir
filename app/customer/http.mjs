@@ -1,3 +1,4 @@
+import {ledgerDeploymentStatus} from './ledger-deployment.mjs';
 import {readFile} from 'node:fs/promises';
 import {stringify} from './persistence.mjs';
 export function createCustomerHandler({service,platform,baseURL,access,control,stop}){
@@ -12,17 +13,20 @@ return async(req,res)=>{try{
   if(req.headers.origin!==baseURL||(!s||req.headers['x-hir-session']!==s.csrf)||!String(req.headers['content-type']).startsWith('application/json'))return send(res,403,{error:'Local session and origin required'});const b=await body(req);
   if(u.pathname==='/api/organization')return send(res,200,await service.organization(b.org));
   if(u.pathname==='/api/capabilities')return send(res,200,await service.capabilities(b.org,b.account));
-  if(['setup','setup/receipt','setup/status','setup/rejected','draft','signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(u.pathname.slice(5)))return send(res,200,await access.call(s,u.pathname.slice(5),b));
+  if(['registration','registration/hash','registration/recheck','registration/rejected','setup','setup/receipt','setup/status','setup/rejected','draft','signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(u.pathname.slice(5)))return send(res,200,await access.call(s,u.pathname.slice(5),b));
   if(u.pathname==='/api/verify')return send(res,200,await service.verify({name:b.name,expectedOrg:b.expectedOrg,bytes:b.pdfBase64?Buffer.from(b.pdfBase64,'base64'):undefined}));
   return send(res,404,{error:'Unknown invoice action'});
  }
  if(req.method!=='GET')return send(res,405,{error:'Method not supported'});
  if(u.pathname==='/api/session'){const current=s||access.create();res.setHeader('Set-Cookie',`hir_invoice_session=${current.id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800`);return send(res,200,{token:current.csrf,chainId:platform.chainId,ledger:platform.ledger,cancellationSupported:false,auth:access.public(current)});}
  if(u.pathname==='/api/overview')return send(res,200,{chainId:platform.chainId,records:(await access.workspace(s,s?.org)).records});
+ if(u.pathname==='/api/setup/pending')return send(res,200,access.pendingSetup(s));
  if(u.pathname==='/api/workspace')return send(res,200,await access.workspace(s,u.searchParams.get('org')));
- if(u.pathname==='/api/platform')return send(res,200,{chainId:platform.chainId,network:platform.chainId===11155111?'Ethereum Sepolia':'Unsupported network',asset:await service.asset(platform.defaultToken)});
+ if(u.pathname==='/api/ledger-deployment')return send(res,200,await ledgerDeploymentStatus({client:platform.deploymentClient,manifest:platform.deploymentManifest,hash:u.searchParams.get('hash')}));
+ if(u.pathname==='/api/platform')return send(res,200,{chainId:platform.chainId,network:platform.chainId===11155111?'Ethereum Sepolia':'Unsupported network',asset:await service.asset(platform.defaultToken),registeredHierarchy:!!platform.registeredHierarchy});
  const screen=u.pathname.match(/^\/screens\/(home|identity|authority|review|workspace|verify)\.html$/);if(screen)return send(res,200,await readFile(`app/customer/public/screens/${screen[1]}.html`),'text/html; charset=utf-8');
  if(u.pathname==='/format.mjs')return send(res,200,await readFile('app/customer/format.mjs'),'text/javascript');
+ if(['/ledger-deployment.html','/ledger-deployment.mjs','/ledger-deployment.css'].includes(u.pathname))return send(res,200,await readFile('app/customer/public'+u.pathname),u.pathname.endsWith('.html')?'text/html; charset=utf-8':u.pathname.endsWith('.css')?'text/css':'text/javascript');
  if(u.pathname==='/site.mjs')return send(res,200,await readFile('app/customer/public/site.mjs'),'text/javascript');
  const localFont=u.pathname.match(/^\/fonts\/((?:font-[0-4]|header-[0-2])\.ttf)$/);if(localFont)return send(res,200,await readFile('app/customer/public/fonts/'+localFont[1]),'font/ttf');
  if(['/stitch.css','/fonts.css','/header-fonts.css'].includes(u.pathname))return send(res,200,await readFile('app/customer/public'+u.pathname),'text/css');
