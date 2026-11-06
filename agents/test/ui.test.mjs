@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {accessView,setupView,policyView,interactionView,historyView,walletProgress} from '../public/views.mjs';
+import {SAMPLE} from '../src/analysis.mjs';
 import {registrationPanel} from '../public/registration-view.mjs';
 const org='organization.eth',label='analysis',name=label+'.agents.'+org,requester='0x0000000000000000000000000000000000000001',receiver='0x0000000000000000000000000000000000000002',wallet='0x0000000000000000000000000000000000000003';
 const profile={id:'context',name,trust:{org,label,requester,receiver,controller:wallet,resolver:receiver,evidence:requester,chainId:11155111},policy:{validAfter:1793970000,validUntil:1794000000},publication:{nativeObserved:true}};
@@ -27,9 +28,9 @@ test('first-time permissions review uses actual preview dates, target and bytes;
 });
 test('wallet approval, interruption, decline and confirmation are distinct and use actual intent data',()=>{
  const model=base();
- for(const [status,title]of [['awaiting-wallet','Waiting for wallet approval'],['wallet-dispatched','Wallet response interrupted'],['submitted','Waiting for confirmation'],['rejected','Approval declined']]){
+ for(const [status,title]of [['awaiting-wallet','Waiting for wallet approval'],['wallet-dispatched','Wallet response interrupted'],['submitted','Waiting for confirmation'],['rejected','Approval declined'],['failed','Transaction failed']]){
   model.wallet.operations={review:{...op(status),...(status==='submitted'?{hash:'0xexisting'}:{})}};const html=walletProgress(model);assert.match(html,new RegExp(title));assert.match(html,/12345/);
-  assert.equal(html.includes('id="recovery-hash"'),status==='wallet-dispatched');assert.equal(html.includes('data-action="wallet-retry"'),status==='rejected');assert.equal(html.includes('data-action="wallet-send"'),status==='awaiting-wallet');assert.doesNotMatch(html,/transactions cannot be duplicated|0 of 2 required/);
+  assert.equal(html.includes('id="recovery-hash"'),status==='wallet-dispatched');assert.equal(html.includes('data-action="wallet-retry"'),['rejected','failed'].includes(status));assert.equal(html.includes('data-action="wallet-send"'),status==='awaiting-wallet');assert.doesNotMatch(html,/transactions cannot be duplicated|0 of 2 required/);
  }
 });
 test('empty activity has no scripted messages; actual adverse behavior stays recordable and separate',()=>{
@@ -39,4 +40,16 @@ test('empty activity has no scripted messages; actual adverse behavior stays rec
 test('history starts unverified and shows receiver-reported non-execution without claiming proof',()=>{
  const model=base();model.jobs=[saved()];model.jobs[0].state.decision.accepted=false;model.jobs[0].state.outcome.status=0;model.jobs[0].state.output=null;model.jobs[0].state.violation=false;
  const html=historyView(model,{filters:{}});assert.match(html,/Receiver reports not run/);assert.match(html,/does not prove hidden non-execution/);assert.match(html,/Not checked/);assert.doesNotMatch(html,/Evidence verified|Local cryptographic store|no.sign.in/);
+});
+
+test('a new name has its own full preview while existing policy and history stay selected',()=>{
+ const model=base(),html=setupView(model,{org,label:'another-agent',newAgent:true,keys:{requester,receiver}});
+ assert.match(html,/Register a new agent/);assert.match(html,/another-agent.agents.organization.eth/);assert.match(html,/value="another-agent"/);assert.match(html,/Return to selected agent/);assert.match(html,/deployment’s runtime/);assert.equal(model.profile.name,name);
+ assert.match(policyView(model),/data-action="new-agent"/);assert.doesNotMatch(policyView(model),/data-action="publish-policy"/);
+});
+test('analysis scope names the actual fixed dataset and preserves real agent choice',()=>{
+ const html=interactionView(base(),null,'');assert.ok(html.includes(SAMPLE.series.join(', ')));assert.match(html,/always analyzes the same response times/);assert.match(html,/choose their messages, tools and decisions/);
+});
+test('current name registration and published policy remain independent findings',()=>{
+ const model=base();model.current={status:'unregistered',policyStatus:'valid',registration:{status:'namespace-unregistered'}};const html=policyView(model);assert.match(html,/Published permissions verified/);assert.match(html,/Registration not confirmed/);assert.match(html,/Continue name setup/);assert.doesNotMatch(html,/Ready for new interactions/);
 });
