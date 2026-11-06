@@ -20,6 +20,7 @@ return async(req,res)=>{try{
  if(req.method!=='GET')return send(res,405,{error:'Method not supported'});
  if(u.pathname==='/api/session'){const current=s||access.create();res.setHeader('Set-Cookie',`hir_invoice_session=${current.id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800`);return send(res,200,{token:current.csrf,chainId:platform.chainId,ledger:platform.ledger,cancellationSupported:false,auth:access.public(current)});}
  if(u.pathname==='/api/overview')return send(res,200,{chainId:platform.chainId,records:(await access.workspace(s,s?.org)).records});
+ if(u.pathname==='/api/setup/history')return send(res,200,access.setupHistory(s));
  if(u.pathname==='/api/setup/pending')return send(res,200,access.pendingSetup(s));
  if(u.pathname==='/api/workspace')return send(res,200,await access.workspace(s,u.searchParams.get('org')));
  if(u.pathname==='/api/ledger-deployment')return send(res,200,await ledgerDeploymentStatus({client:platform.deploymentClient,manifest:platform.deploymentManifest,hash:u.searchParams.get('hash')}));
@@ -27,6 +28,8 @@ return async(req,res)=>{try{
  const screen=u.pathname.match(/^\/screens\/(home|identity|authority|review|workspace|verify)\.html$/);if(screen)return send(res,200,await readFile(`app/customer/public/screens/${screen[1]}.html`),'text/html; charset=utf-8');
  if(u.pathname==='/format.mjs')return send(res,200,await readFile('app/customer/format.mjs'),'text/javascript');
  if(['/ledger-deployment.html','/ledger-deployment.mjs','/ledger-deployment.css'].includes(u.pathname))return send(res,200,await readFile('app/customer/public'+u.pathname),u.pathname.endsWith('.html')?'text/html; charset=utf-8':u.pathname.endsWith('.css')?'text/css':'text/javascript');
+ if(u.pathname==='/invoice-ui.css')return send(res,200,await readFile('app/customer/public/invoice-ui.css'),'text/css');
+ if(u.pathname==='/invoice-states.mjs')return send(res,200,await readFile('app/customer/public/invoice-states.mjs'),'text/javascript');
  if(u.pathname==='/site.mjs')return send(res,200,await readFile('app/customer/public/site.mjs'),'text/javascript');
  const localFont=u.pathname.match(/^\/fonts\/((?:font-[0-4]|header-[0-2])\.ttf)$/);if(localFont)return send(res,200,await readFile('app/customer/public/fonts/'+localFont[1]),'font/ttf');
  if(['/stitch.css','/fonts.css','/header-fonts.css'].includes(u.pathname))return send(res,200,await readFile('app/customer/public'+u.pathname),'text/css');

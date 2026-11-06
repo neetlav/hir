@@ -1,208 +1,79 @@
-<main class="w-full bg-background min-h-screen flex items-center justify-center p-space-lg"><div class="flex flex-col w-full">
-<div class="w-full max-w-6xl mx-auto px-space-sm sm:px-space-md py-space-md">
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-lg">
-<div class="flex items-center gap-space-sm">
-<span class="flex items-center justify-center w-7 h-7 rounded-full bg-blush-field text-dark-pink">
-<span class="material-symbols-outlined text-[18px]">verified_user</span>
-</span>
-<span class="font-label-sm text-label-sm tracking-wider uppercase text-muted-text font-semibold">
-          ORGANIZATION VERIFICATION · Setup Pipeline
-        </span>
+<main class="invoice-module">
+<nav class="setup-trail" aria-label="Organization setup">
+<span >
+<b>✓</b>Organization</span>
+<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+<span >
+<b>✓</b>Invoice authority</span>
+<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+<span aria-current="step">
+<b>3</b>Review setup</span>
+</nav>
+<header class="module-heading">
+<h1>Finish organization setup</h1>
+<p class="module-intro">Review each transaction in your wallet. Completed steps are reused.</p>
+</header>
+<div class="setup-layout">
+<section class="module-panel">
+<div class="panel-heading">
+<h2>Setup approvals</h2>
+<span class="status-chip" id="config-badge-text">Checking setup</span>
 </div>
-<div class="flex items-center gap-2 self-start sm:self-auto bg-surface-secondary px-3 py-1.5 rounded-full shadow-sm">
-<span class="w-2 h-2 rounded-full bg-success"></span>
-<span class="font-label-sm text-label-sm text-ink font-medium">[[org]]</span>
-<span class="text-outline-variant text-[11px]">•</span>
-<span class="font-label-sm text-label-sm font-mono text-body-text">[[shortAccount]]</span>
-<span class="bg-primary-fixed text-primary px-2 py-0.5 rounded-full text-[11px] font-semibold">[[role]]</span>
+<p class="help" id="setup-progress-summary">Confirmed ENS steps will be reused. Each remaining transaction is approved separately.</p>
+<div id="setup-history">
 </div>
+<section class="next-setup">
+<div class="panel-heading">
+<h3 id="config-title">Next setup transaction</h3>
+<span class="status-chip pink">Next wallet action</span>
 </div>
-<div class="pb-space-lg">
-<h1 class="font-headline-xl text-headline-xl text-ink font-bold tracking-tight">
-        Review &amp; finish organization setup
-      </h1>
-<p class="font-body-lg text-body-lg text-body-text mt-2 max-w-3xl leading-relaxed">
-        Review your ENSv2 invoice authority configuration before confirming. Once confirmed on Sepolia, authorized keys can sign invoices and counterparties can verify them independently.
-      </p>
+<p id="state-info-desc" class="help">Review the next transaction in your organization owner’s wallet.</p>
+<div id="setup-operation-state" aria-live="polite">
 </div>
-<div class="bg-surface rounded-xl p-3 shadow-sm border border-border mb-space-md"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary-blue text-[18px]">sync_alt</span><span class="font-label-sm text-ink font-bold uppercase tracking-wider text-[11px]">Configuration progress:</span></div><div class="flex items-center gap-1.5 flex-wrap" id="lifecycle-tabs"><span class="lifecycle-step-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-dark-pink text-surface transition-colors" data-state="ready">1. Ready for wallet approval</span><span class="lifecycle-step-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-surface-secondary text-body-text hover:bg-hover transition-colors" data-state="submitted">2. Transaction submitted</span><span class="lifecycle-step-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-surface-secondary text-body-text hover:bg-hover transition-colors" data-state="awaiting">3. Awaiting confirmation</span><span class="lifecycle-step-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-surface-secondary text-body-text hover:bg-hover transition-colors" data-state="confirmed">4. Configuration confirmed</span></div></div></div><div class="bg-surface p-space-md rounded-xl shadow-sm mb-space-xl">
-<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md items-center">
-<div class="flex items-center gap-3">
-<div class="flex items-center justify-center w-8 h-8 rounded-full bg-success text-on-primary font-bold shadow-sm">
-<span class="material-symbols-outlined text-[18px]">check</span>
-</div>
-<div>
-<div class="font-label-sm text-label-sm text-muted-text uppercase font-semibold">Step 1</div>
-<div class="font-label-md text-label-md text-ink font-semibold flex items-center gap-1.5">
-              Identity connected
-              <span class="text-success text-xs font-normal">Completed</span>
-</div>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<div class="flex items-center justify-center w-8 h-8 rounded-full bg-success text-on-primary font-bold shadow-sm">
-<span class="material-symbols-outlined text-[18px]">check</span>
-</div>
-<div>
-<div class="font-label-sm text-label-sm text-muted-text uppercase font-semibold">Step 2</div>
-<div class="font-label-md text-label-md text-ink font-semibold flex items-center gap-1.5">
-              Configure invoice authority
-              <span class="text-success text-xs font-normal">Completed</span>
+<details class="module-details">
+<summary>
+<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>Transaction details</summary>
+<pre id="registered-setup-transaction">Exact details will appear when you review the next transaction.</pre>
+</details>
+<button id="confirm-btn" data-action="confirm-setup" class="primary">
+<span id="confirm-btn-label">Review next transaction</span>
+<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+</button>
+</section>
+<div id="setup-recovery" hidden>
+<label for="setup-known-hash">Existing setup transaction hash</label>
+<div class="field-action">
+<input id="setup-known-hash" placeholder="0x…" autocomplete="off">
+<button id="setup-record-hash" class="secondary">Check existing transaction</button>
 </div>
 </div>
+<p class="module-callout">
+<span class="material-symbols-outlined" aria-hidden="true">info</span>Check any previous transaction before continuing. Confirmed steps are reused.</p>
+</section>
+<aside class="module-panel configured-details">
+<h2>Configured details</h2>
+<dl>
+<dt>Organization ENS</dt>
+<dd class="mono">[[org]]</dd>
+<dt>Invoice signer</dt>
+<dd class="mono">[[shortIssuer]]</dd>
+<dt>Receiving wallet</dt>
+<dd class="mono">[[shortRecipient]]</dd>
+<dt>Payment asset</dt>
+<dd>[[symbol]] · Ethereum Sepolia (test)</dd>
+</dl>
+<details class="module-details">
+<summary>Full wallet addresses</summary>
+<p class="mono">Invoice signer: [[issuer]]</p>
+<p class="mono">Receiving wallet: [[recipient]]</p>
+</details>
+<p class="help">
+<span class="material-symbols-outlined" aria-hidden="true">shield</span>Your organization keeps control of its registered names. HIR does not take ownership.</p>
+</aside>
 </div>
-<div class="flex items-center gap-3 bg-blush-field/60 p-2 rounded-lg">
-<div class="flex items-center justify-center w-8 h-8 rounded-full bg-dark-pink text-on-secondary font-bold shadow-sm ring-2 ring-blush-field">
-<span class="w-2.5 h-2.5 rounded-full bg-surface"></span>
+<div class="module-actions">
+<button class="secondary" data-action="authority">
+<span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Back</button>
+<span id="readiness-step-badge" class="help">Setup is not complete yet</span>
 </div>
-<div>
-<div class="font-label-sm text-label-sm text-dark-pink uppercase font-bold">Step 3 · Active</div>
-<div class="font-label-md text-label-md text-ink font-bold">Review &amp; finish</div>
-</div>
-</div>
-</div>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-<div class="lg:col-span-8 flex flex-col gap-space-lg">
-<div class="bg-surface rounded-xl p-space-lg shadow-sm">
-<div class="flex items-center justify-between pb-space-sm mb-space-md bg-surface-secondary/40 p-3 rounded-lg">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary-blue text-[20px]">corporate_fare</span>
-<span class="font-headline-sm text-headline-sm text-ink">Organization identity summary</span>
-</div>
-<span class="bg-pale-blue-field text-primary-blue font-label-sm text-label-sm font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
-<span class="material-symbols-outlined text-[15px]">verified</span>
-              [[permissionLabel]]
-            </span>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
-<div class="bg-surface-secondary p-3.5 rounded-lg">
-<span class="font-label-sm text-label-sm text-muted-text block mb-1">Domain Name</span>
-<span class="font-headline-sm text-headline-sm text-ink break-all">[[org]]</span>
-</div>
-<div class="bg-surface-secondary p-3.5 rounded-lg sm:col-span-2">
-<div class="flex items-center justify-between mb-1">
-<span class="font-label-sm text-label-sm text-muted-text">Connected wallet · resolver permissions</span>
-<span class="font-label-sm text-label-sm text-success font-medium flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-primary-blue"></span><span id="controller-state-text">[[permissionLabel]]</span></span>
-</div>
-<span class="font-body-md text-body-md font-mono text-ink break-all">
-                [[account]]
-              </span>
-</div>
-</div>
-</div>
-<div class="bg-surface rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h2 class="font-headline-sm text-headline-sm text-ink" id="config-title">Configuration to be confirmed</h2><p class="font-body-sm text-body-sm text-muted-text mt-0.5" id="config-subheading">This configuration requires the connected wallet’s actual resolver permissions.</p></div><span class="inline-flex items-center gap-1 self-start sm:self-auto bg-lavender-field text-secondary px-3 py-1 rounded-full text-xs font-semibold" id="config-status-badge"><span class="material-symbols-outlined text-[14px]">pending_actions</span><span id="config-badge-text">Ready for Wallet Approval</span></span></div>
-<div class="bg-surface-secondary/70 p-space-md rounded-xl flex flex-col gap-space-sm">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="w-6 h-6 rounded-md bg-pale-blue-field text-primary-blue flex items-center justify-center">
-<span class="material-symbols-outlined text-[16px]">edit_document</span>
-</span>
-<span class="font-label-md text-label-md font-semibold text-ink">Authorized Invoice Issuer</span>
-</div>
-<span class="font-label-sm text-label-sm bg-surface px-2 py-0.5 rounded text-body-text shadow-sm font-mono">
-                Authorized signer address
-              </span>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm mt-1">
-<div class="bg-surface p-3 rounded-lg shadow-sm">
-<span class="font-label-sm text-label-sm text-muted-text block mb-0.5">ENS alias (optional)</span>
-<span class="font-body-md text-body-md text-ink font-semibold">Not configured · optional</span>
-</div>
-<div class="bg-surface p-3 rounded-lg shadow-sm">
-<span class="font-label-sm text-label-sm text-muted-text block mb-0.5">Authorized Signer Wallet</span>
-<span class="font-body-sm text-body-sm font-mono text-ink break-all">[[issuer]]</span>
-</div>
-</div>
-<div class="bg-pale-blue-field/50 p-2.5 rounded-lg flex items-start gap-2 text-primary-blue font-body-sm text-body-sm mt-1">
-<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">policy</span>
-<span><strong>Scope of Authority:</strong> Authorized solely to issue &amp; sign commercial invoices under [[org]]. This invoice authorization does not grant administrative permissions.</span>
-</div>
-</div>
-<div class="bg-surface-secondary/70 p-space-md rounded-xl flex flex-col gap-space-sm">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="w-6 h-6 rounded-md bg-blush-field text-dark-pink flex items-center justify-center">
-<span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
-</span>
-<span class="font-label-md text-label-md font-semibold text-ink">Approved Receiving Destination</span>
-</div>
-<span class="font-label-sm text-label-sm bg-surface px-2 py-0.5 rounded text-body-text shadow-sm">
-                Settlement Rail
-              </span>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm mt-1">
-<div class="bg-surface p-3 rounded-lg shadow-sm">
-<span class="font-label-sm text-label-sm text-muted-text block mb-0.5">Payment Asset</span>
-<div class="flex items-center gap-2 mt-0.5">
-<span class="w-5 h-5 rounded-full bg-primary-blue text-on-primary text-[10px] font-bold flex items-center justify-center">$</span>
-<span class="font-body-md text-body-md text-ink font-semibold">[[symbol]]</span>
-<span class="text-xs text-muted-text font-mono">[[network]] · [[shortToken]]</span>
-</div>
-</div>
-<div class="bg-surface p-3 rounded-lg shadow-sm">
-<span class="font-label-sm text-label-sm text-muted-text block mb-0.5">Receiving Wallet</span>
-<span class="font-body-sm text-body-sm font-mono text-ink break-all">[[recipient]]</span>
-<span class="text-[11px] text-muted-text block mt-0.5">Primary Corporate Receiving Address</span>
-</div>
-</div>
-<div class="bg-blush-field/40 p-2.5 rounded-lg flex items-start gap-2 text-dark-pink font-body-sm text-body-sm mt-1">
-<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">shield_lock</span>
-<span><strong>Receiving policy:</strong> Invoices issued under this identity will mandate counterparty verification against this exact recipient address to detect a changed receiving destination.</span>
-</div>
-</div>
-</div>
-<div class="bg-surface rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md"><div class="flex items-start gap-3 bg-surface-secondary p-space-md rounded-xl" id="state-info-container"><span class="material-symbols-outlined text-primary-blue text-[24px] shrink-0 mt-0.5" id="state-info-icon">info</span><div><h3 class="font-label-md text-label-md font-semibold text-ink" id="state-info-title">What this confirmation does</h3><p class="font-body-md text-body-md text-body-text mt-1 leading-relaxed" id="state-info-desc">Clicking 'Confirm organization setup' will prompt your connected wallet with the required resolver permissions to submit a one-time transaction to configure the signer address and approved receiving details in your organization's ENSv2 records. No new resolver or registry is deployed.</p></div></div><div class="bg-pale-blue-field/40 p-space-md rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm border border-border"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-primary-blue text-[20px] shrink-0">check_circle</span><span class="font-body-sm text-body-sm text-ink"><strong>Already configured?</strong> If your organization already has a valid configuration recorded on ENSv2, you can proceed directly to your workspace without repeating setup.</span></div><a class="inline-flex items-center justify-center shrink-0 px-3 py-1.5 rounded-lg bg-surface text-primary-blue font-label-sm text-label-sm font-semibold hover:bg-hover shadow-sm transition-colors" href="#" data-action="workspace" type="button" data-needs-ready="">Go to workspace →</a></div></div>
-<div class="flex flex-col sm:flex-row items-center justify-between gap-space-md pt-space-xs"><button class="w-full sm:w-auto px-5 py-3 rounded-lg bg-surface text-ink font-label-md text-label-md font-semibold hover:bg-surface-secondary shadow-sm transition-colors flex items-center justify-center gap-2 border border-border" type="button" data-action="authority"><span class="material-symbols-outlined text-[18px]">arrow_back</span>Back to authority setup</button><div class="flex flex-col sm:flex-row items-center gap-space-sm w-full sm:w-auto"><button class="w-full sm:w-auto px-5 py-3 rounded-lg bg-surface-secondary text-body-text font-label-md text-label-md font-semibold hover:bg-hover transition-colors text-center" type="button" data-action="workspace" data-needs-ready="">Go to workspace</button><button class="w-full sm:w-auto px-6 py-3 rounded-lg bg-dark-pink text-on-secondary font-label-md text-label-md font-semibold shadow-md hover:bg-secondary transition-all flex items-center justify-center gap-2 group" id="confirm-btn" type="button" data-action="confirm-setup"><span id="confirm-btn-label">Confirm organization setup</span><span class="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform" id="confirm-btn-icon">arrow_forward</span></button></div></div>
-</div>
-<div class="lg:col-span-4 flex flex-col gap-space-md">
-<div class="bg-surface rounded-xl p-space-lg shadow-sm"><div class="flex items-center justify-between mb-space-md pb-space-sm bg-surface-secondary/40 p-2.5 rounded-lg"><span class="font-headline-sm text-headline-sm text-ink">Setup Completion</span><span class="font-label-sm text-label-sm font-semibold bg-lavender-field text-secondary px-2.5 py-0.5 rounded-full" id="readiness-step-badge">Step 3 of 3 · Awaiting approval</span></div><div class="mb-space-md"><div class="flex items-center justify-between font-label-sm text-label-sm text-muted-text mb-1"><span>Readiness Progress</span><span class="font-semibold text-ink" id="readiness-percentage-label">Awaiting review</span></div><div class="w-full bg-surface-secondary rounded-full h-2 overflow-hidden"><div class="bg-dark-pink h-2 rounded-full transition-all duration-500" id="readiness-progress-fill"></div></div></div><div class="flex flex-col gap-2.5" id="readiness-checklist"><div class="flex items-center gap-2.5 p-2 rounded-lg bg-surface-secondary/50"><span class="material-symbols-outlined text-success text-[18px]">task_alt</span><span class="font-body-sm text-body-sm text-ink font-medium">Identity connected</span></div><div class="flex items-center gap-2.5 p-2 rounded-lg bg-surface-secondary/50"><span class="material-symbols-outlined text-success text-[18px]">task_alt</span><span class="font-body-sm text-body-sm text-ink font-medium">Authority parameters drafted</span></div><div class="flex items-center gap-2.5 p-2 rounded-lg bg-blush-field/40" id="checklist-item-3"><span class="material-symbols-outlined text-dark-pink text-[18px]" id="checklist-icon-3">pending</span><span class="font-body-sm text-body-sm text-ink font-medium" id="checklist-text-3">Onchain ENS confirmation (Pending approval)</span></div></div></div>
-<div class="bg-surface rounded-xl p-space-lg shadow-sm">
-<h3 class="font-headline-sm text-headline-sm text-ink mb-space-sm flex items-center gap-2">
-<span class="material-symbols-outlined text-primary-blue text-[20px]">timeline</span>
-            What happens next?
-          </h3>
-<div class="relative pl-6 flex flex-col gap-4 mt-space-md before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-secondary">
-<div class="relative">
-<span class="absolute -left-6 top-0.5 flex items-center justify-center w-5 h-5 rounded-full bg-primary-blue text-on-primary text-[10px] font-bold">1</span>
-<h4 class="font-label-md text-label-md font-semibold text-ink">Confirm configuration via wallet</h4>
-<p class="font-body-sm text-body-sm text-muted-text mt-0.5">Review each one-time setup transaction in the organization owner’s wallet. Completed steps are reused.</p>
-</div>
-<div class="relative">
-<span class="absolute -left-6 top-0.5 flex items-center justify-center w-5 h-5 rounded-full bg-primary-blue text-on-primary text-[10px] font-bold">2</span>
-<h4 class="font-label-md text-label-md font-semibold text-ink">Invoice authority active after confirmation</h4>
-<p class="font-body-sm text-body-sm text-muted-text mt-0.5">Records are cryptographically bound to ENSv2 resolver records.</p>
-</div>
-<div class="relative">
-<span class="absolute -left-6 top-0.5 flex items-center justify-center w-5 h-5 rounded-full bg-primary-blue text-on-primary text-[10px] font-bold">3</span>
-<h4 class="font-label-md text-label-md font-semibold text-ink">Start issuing verified invoices</h4>
-<p class="font-body-sm text-body-sm text-muted-text mt-0.5">The authorized signer can review the final PDF, register its ENS name, sign once and publish directly.</p>
-</div>
-</div>
-</div>
-<div class="bg-ink text-surface rounded-xl p-space-lg shadow-md relative overflow-hidden">
-<div class="flex items-center gap-2 text-pale-blue-field mb-2">
-<span class="material-symbols-outlined text-[18px]">lock</span>
-<span class="font-label-sm text-label-sm tracking-wider uppercase font-bold">ENSv2 Tamper-Evident Authority</span>
-</div>
-<p class="font-body-sm text-body-sm text-primary-fixed leading-relaxed">The shared smart contract checks each invoice signature against the signer address authorized in the organization’s ENS configuration. This does not certify legal corporate identity.</p>
-<div class="mt-4 pt-3 flex items-center justify-between text-xs text-muted-text">
-<span>Native ENSv2 records</span>
-<span class="text-success flex items-center gap-1 font-medium">
-<span class="w-1.5 h-1.5 rounded-full bg-success"></span> Verified Format
-            </span>
-</div>
-</div>
-<div class="bg-surface-secondary/70 p-space-md rounded-xl flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-muted-text text-[20px]">dashboard</span>
-<span class="font-label-md text-label-md font-medium text-ink">Need to review drafts?</span>
-</div>
-<a class="font-label-sm text-label-sm text-primary-blue font-semibold hover:underline" href="#" data-action="workspace" type="button" data-needs-ready="">
-            Go to workspace →
-          </a>
-</div></div>
-</div>
-</div>
-</div></main>
+</main>

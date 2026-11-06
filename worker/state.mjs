@@ -29,6 +29,7 @@ export class InvoiceState extends DurableObject{
   if(request.method==='GET'){
    if(route==='ledger-deployment')return response(await ledgerDeploymentStatus({client:this.client,manifest,hash:url.searchParams.get('hash')}));
    if(route==='platform')return response({chainId:platform.chainId,network:'Ethereum Sepolia',documentStorage:'none',defaultToken:platform.defaultToken,registeredHierarchy:!!platform.registeredHierarchy});
+   if(route==='setup/history')return response(this.access.setupHistory(s));
    if(route==='setup/pending')return response(this.access.pendingSetup(s));
    if(route==='workspace'||route==='overview'){const view=await this.access.workspace(s,route==='workspace'?url.searchParams.get('org'):s?.org);return response(route==='overview'?{chainId:platform.chainId,records:view.records}:view);}
    const doc=route.match(/^document\/([a-f0-9-]{36})\.(pdf|json)$/),draft=route.match(/^draft\/([a-f0-9-]{36})$/);

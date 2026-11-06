@@ -1,1 +1,34 @@
-<section id="recipient-view" class="max-w-[960px] mx-auto px-6 py-12"><p class="eyebrow">INDEPENDENT VERIFICATION</p><h1>Check the invoice you received.</h1><p>Use the supplier ENS identity you already know and the actual received PDF. No wallet connection is needed.</p><p class="screen-note">This application verifies invoices from the registered-name smart contract only. Earlier invoice deployments are not supported here.</p><form id="verify" class="card verify-form"><label>Supplier ENS Name (as shown in invoice)<input name="expectedOrg" placeholder="abc.eth" aria-describedby="supplier-ens-help" required autocomplete="off"></label><p class="help" id="supplier-ens-help">Enter the supplier’s ENS name shown on the invoice. Independently confirm that it belongs to the supplier you expect through a trusted contact. The invoice link does not select it for you.</p><label>Invoice Authenticity Code<input name="name" id="invoice-name" placeholder="inv-0042.invoices.abc.eth" aria-describedby="invoice-name-help" required autocomplete="off"></label><p class="help" id="invoice-name-help">Copy the Invoice Authenticity Code from the PDF or its verification link. This is the full invoice ENS name, not the invoice number or supplier name.</p><label class="upload-field">Invoice attachment<input name="pdf" type="file" accept="application/pdf,.pdf" required></label><button class="primary" type="submit">Verify received invoice</button></form><div id="verification" aria-live="polite"></div><p class="help">Current revision, original authorization and current receiving policy are separate checks. Cancellation is not supported by this smart contract.</p></section>
+<main id="recipient-view" class="invoice-module">
+<header class="module-heading">
+<h1>Check an invoice</h1>
+<p class="module-intro">Use the supplier you expect and the PDF you received. No wallet needed.</p>
+</header>
+<div class="verification-layout">
+<form id="verify" class="module-panel">
+<h2>Invoice information</h2>
+<p class="help">Provide supplier identity and the invoice reference.</p>
+<label for="supplier-ens">Expected supplier ENS name</label>
+<input id="supplier-ens" name="expectedOrg" placeholder="your-supplier.eth" required autocomplete="off">
+<p class="help">Confirm this name through a trusted supplier contact. Do not trust a name just because it appears on the received invoice.</p>
+<label for="invoice-name">Invoice authenticity code</label>
+<input name="name" id="invoice-name" placeholder="inv-0042.invoices.your-supplier.eth" required autocomplete="off">
+<p class="help">Copy the full code from the PDF or verification link.</p>
+<label for="received-pdf">Received PDF document</label>
+<div class="file-picker">
+<span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+<input id="received-pdf" name="pdf" type="file" accept="application/pdf,.pdf" required>
+</div>
+<p class="help">Your PDF is used for verification and is not stored.</p>
+<button class="primary" type="submit">
+<span class="material-symbols-outlined" aria-hidden="true">verified</span>Verify invoice</button>
+</form>
+<div id="verification" aria-live="polite">
+<section class="module-panel verification-empty">
+<span class="material-symbols-outlined" aria-hidden="true">fact_check</span>
+<h2>Ready to check your invoice</h2>
+<p>Enter the supplier you independently expect and upload the PDF you received. Results will appear here.</p>
+<p class="help">These checks do not tell you whether to pay.</p>
+</section>
+</div>
+</div>
+</main>

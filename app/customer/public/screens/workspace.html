@@ -1,353 +1,79 @@
-<main class="w-full  bg-background min-h-screen"><div class="flex flex-col w-full">
-<section class="w-full bg-surface shadow-sm">
-<div class="max-w-[1200px] mx-auto px-margin">
-<div class="flex flex-col md:flex-row md:items-center justify-between py-space-sm gap-space-md">
-<nav aria-label="Workspace Sections" class="flex items-center gap-space-lg overflow-x-auto pb-1 md:pb-0">
-<a class="font-label-md text-label-md text-dark-pink font-semibold py-3 border-b-2 border-dark-pink flex items-center gap-2 tracking-normal transition-colors" href="#">
-<span class="material-symbols-outlined text-[19px]">dashboard</span>
-            Overview
-          </a>
-<a class="font-label-md text-label-md text-muted-text hover:text-ink py-3 border-b-2 border-transparent flex items-center gap-2 transition-colors" href="#">
-<span class="material-symbols-outlined text-[19px]">receipt_long</span>
-            Invoices
-            <span class="bg-surface-secondary text-ink font-label-sm text-label-sm px-2 py-0.5 rounded-full font-medium">[[publishedCount]]</span>
-</a>
-<a class="font-label-md text-label-md text-muted-text hover:text-ink py-3 border-b-2 border-transparent flex items-center gap-2 transition-colors" href="#">
-<span class="material-symbols-outlined text-[19px]">verified_user</span>
-            Verify
-          </a>
-<a class="font-label-md text-label-md text-muted-text hover:text-ink py-3 border-b-2 border-transparent flex items-center gap-2 transition-colors" href="#">
-<span class="material-symbols-outlined text-[19px]">tune</span>
-            Organization Settings
-          </a>
+<main class="invoice-module">
+<nav class="workspace-tabs">
+<a aria-current="page" href="/workspace" data-action="workspace">Invoices</a>
+<a href="/verify" data-action="verify">Verify invoice</a>
+<span class="namespace-label">[[org]]</span>
 </nav>
-<div class="flex items-center gap-space-sm flex-wrap">
-<div class="inline-flex items-center gap-2 bg-surface-secondary px-3 py-1.5 rounded-xl shadow-sm">
-<span class="w-2 h-2 rounded-full bg-success ring-4 ring-success/15 animate-pulse"></span>
-<span class="font-label-sm text-label-sm font-semibold text-ink">[[org]]</span>
-</div>
-<div class="inline-flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded-xl text-muted-text font-label-sm text-label-sm" data-action="wallet" role="button" tabindex="0">
-<span class="material-symbols-outlined text-[16px] text-body-text">account_balance_wallet</span>
-<span class="font-mono text-body-text font-medium">[[shortAccount]]</span>
-</div>
-<div class="inline-flex items-center gap-1 bg-pale-blue-field px-2.5 py-1.5 rounded-xl text-primary-blue font-label-sm text-label-sm font-medium">
-<span class="material-symbols-outlined text-[14px]">bolt</span>
-<span class="">Powered by ENSv2</span>
-</div>
-</div>
-</div>
-</div>
-</section>
-<div class="max-w-[1200px] mx-auto px-margin py-space-xl flex flex-col gap-space-xl w-full">
-<section class="bg-surface rounded-2xl p-space-lg md:p-space-xl shadow-sm relative overflow-hidden">
-<div class="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-pale-blue-field/40 blur-3xl pointer-events-none"></div>
-<div class="absolute right-1/3 -bottom-20 w-64 h-64 rounded-full bg-blush-field/40 blur-2xl pointer-events-none"></div>
-<div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
-<div class="flex flex-col gap-space-sm">
-<div class="flex items-center gap-3 flex-wrap">
-<div class="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-on-primary shadow-sm">
-<span class="material-symbols-outlined text-[26px]">corporate_fare</span>
-</div>
-<div class="flex flex-col">
-<div class="flex items-center gap-2">
-<h1 class="font-headline-md text-headline-md text-ink tracking-tight font-bold">[[org]]</h1>
-<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pale-blue-field text-primary-blue font-label-sm text-label-sm font-semibold">
-<span class="material-symbols-outlined text-[14px]">verified</span>
-                  Verified Authority
-                </span>
-</div>
-<p class="font-body-sm text-body-sm text-muted-text flex items-center gap-2 mt-0.5">
-<span class="">Organization controller:</span>
-<span class="font-mono text-body-text font-medium select-all">[[controller]]</span>
-</p>
-</div>
-</div>
-<div class="flex items-center gap-2 mt-2 flex-wrap pt-2">
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-secondary text-ink font-label-sm text-label-sm">
-<span class="w-2 h-2 rounded-full bg-success"></span>
-<span class="font-medium text-success">[[readiness]]</span>
-</div>
-<span class="text-outline-variant hidden sm:inline">•</span>
-<p class="font-label-sm text-label-sm text-muted-text leading-relaxed">
-              [[configState]] · Authorized Signer: <code class="font-mono text-ink font-semibold bg-surface-container-low px-1.5 py-0.5 rounded">[[shortIssuer]]</code> <span class="text-muted-text">(Optional alias: <span class="font-mono text-body-text">Not configured · optional</span>)</span>
-</p>
-</div>
-<p id="issuer-connection-state" role="status" class="font-label-sm text-label-sm text-muted-text leading-relaxed mt-2 break-words">[[signerConnection]]</p>
-</div>
-<div class="flex items-center gap-space-sm self-start lg:self-center flex-wrap">
-<button id="connect-issuer" data-action="wallet" type="button" class="inline-flex items-center justify-center gap-2 bg-surface hover:bg-hover text-ink border border-border font-label-md text-label-md px-5 py-3 rounded-xl shadow-sm transition-all font-semibold"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>Connect invoice signer</button>
-<button class="inline-flex items-center justify-center gap-2 bg-dark-pink hover:bg-secondary text-on-secondary font-label-md text-label-md px-5 py-3 rounded-xl transition-all shadow-sm font-semibold" data-action="create-invoice" type="button">
-<span class="material-symbols-outlined text-[20px]">add</span>
-<span class="">Create Invoice</span>
-</button>
-<button class="inline-flex items-center justify-center gap-2 bg-surface hover:bg-hover text-ink border border-border font-label-md text-label-md px-5 py-3 rounded-xl shadow-sm transition-all font-semibold" data-action="verify" type="button">
-<span class="material-symbols-outlined text-[20px] text-primary-blue">search_check</span>
-<span class="">Verify Invoice</span>
-</button>
-</div>
-</div>
-</section>
-<section aria-label="Operational Stats" class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
-<div class="bg-surface rounded-2xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
-<div class="flex items-start justify-between">
-<div class="flex flex-col gap-1">
-<span class="font-label-sm text-label-sm text-muted-text font-medium uppercase tracking-wider">Published Invoices</span>
-<span class="font-headline-xl text-headline-xl text-ink font-bold leading-tight">[[publishedCount]]</span>
-</div>
-<div class="w-11 h-11 rounded-xl bg-pale-blue-field text-primary-blue flex items-center justify-center">
-<span class="material-symbols-outlined text-[22px]">assignment_turned_in</span>
-</div>
-</div>
-<div class="pt-space-md mt-space-md border-t border-border flex items-center gap-2">
-<span class="inline-flex items-center gap-1 text-success font-label-sm text-label-sm font-medium">
-<span class="material-symbols-outlined text-[15px]">lock</span>
-            All cryptographically anchored to ENSv2
-          </span>
-</div>
-</div>
-<div class="bg-surface rounded-2xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
-<div class="flex items-start justify-between">
-<div class="flex flex-col gap-1">
-<span class="font-label-sm text-label-sm text-muted-text font-medium uppercase tracking-wider">Active Revisions</span>
-<span class="font-headline-xl text-headline-xl text-ink font-bold leading-tight">[[currentCount]] current</span>
-</div>
-<div class="w-11 h-11 rounded-xl bg-surface-secondary text-ink flex items-center justify-center">
-<span class="material-symbols-outlined text-[22px]">verified</span>
-</div>
-</div>
-<div class="pt-space-md mt-space-md border-t border-border flex items-center gap-2">
-<span class="font-label-sm text-label-sm text-muted-text">
-            [[revisionSummary]]
-          </span>
-</div>
-</div>
-<div class="bg-surface rounded-2xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow">
-<div class="flex items-start justify-between">
-<div class="flex flex-col gap-1">
-<span class="font-label-sm text-label-sm text-muted-text font-medium uppercase tracking-wider">Last Published</span>
-<span class="font-headline-xl text-headline-xl text-ink font-bold leading-tight">[[lastPublished]]</span>
-</div>
-<div class="w-11 h-11 rounded-xl bg-blush-field text-dark-pink flex items-center justify-center">
-<span class="material-symbols-outlined text-[22px]">schedule</span>
-</div>
-</div>
-<div class="pt-space-md mt-space-md border-t border-border flex items-center justify-between">
-<span class="font-label-sm text-label-sm text-muted-text">
-            Invoice <span class="font-mono text-ink font-semibold">#[[lastNumber]]</span>
-</span>
-<span class="font-label-sm text-label-sm text-success font-medium flex items-center gap-1">
-<span class="w-1.5 h-1.5 rounded-full bg-success"></span> Confirmed
-          </span>
-</div>
-</div>
-</section>
-<section class="bg-surface rounded-2xl p-space-lg md:p-space-xl shadow-sm flex flex-col gap-space-lg">
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<header class="module-heading workspace-heading">
 <div>
-<h2 class="font-headline-md text-headline-md text-ink font-bold">Published Invoices</h2>
-<p class="font-body-sm text-body-sm text-muted-text mt-0.5">Immutable records attested under authority records on ENSv2</p>
+<h1>Invoices</h1>
+<p class="module-intro" id="workspace-readiness">[[readiness]]</p>
 </div>
-<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-sm">
-<div class="relative min-w-[280px]">
-<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-text text-[18px]">search</span>
-<input class="w-full bg-surface-secondary focus:bg-surface text-ink placeholder:text-muted-text font-body-sm text-body-sm pl-10 pr-4 py-2.5 rounded-xl border-none outline-none ring-1 ring-border focus:ring-2 focus:ring-dark-pink transition-all" placeholder="Filter by invoice ref or customer..." type="text" id="invoice-filter" aria-label="Filter invoices">
+<button class="primary" data-action="create-invoice" disabled>
+<span class="material-symbols-outlined" aria-hidden="true">add</span>Create invoice</button>
+</header>
+<details class="module-details organization-details">
+<summary>
+<span class="material-symbols-outlined" aria-hidden="true">domain</span>Organization details <span class="status-chip">Read-only</span>
+</summary>
+<dl>
+<dt>ENS organization</dt>
+<dd>[[org]]</dd>
+<dt>Organization owner</dt>
+<dd class="mono">[[controller]]</dd>
+<dt>Authorized signer</dt>
+<dd class="mono">[[issuer]]</dd>
+<dt>Receiving wallet</dt>
+<dd class="mono">[[recipient]]</dd>
+<dt>Asset and network</dt>
+<dd>[[symbol]] · [[network]]</dd>
+</dl>
+<button id="connect-issuer" class="secondary" data-action="wallet">Connect invoice signer</button>
+<p class="help">[[signerConnection]]</p>
+</details>
+<section class="module-panel drafts-panel">
+<div class="panel-heading">
+<h2>Drafts</h2>
+<span id="draft-count" class="status-chip">No drafts</span>
 </div>
-<div class="relative">
-<select class="appearance-none bg-surface-secondary text-ink font-label-md text-label-md pl-3.5 pr-9 py-2.5 rounded-xl border-none outline-none ring-1 ring-border focus:ring-2 focus:ring-dark-pink transition-all cursor-pointer" id="status-filter">
+<div id="draft-rows">
+</div>
+</section>
+<section class="module-panel">
+<div class="panel-heading">
+<div>
+<h2>Published invoices</h2>
+<p class="help">[[tableSummary]]</p>
+</div>
+<div class="table-filters">
+<label class="sr-only" for="invoice-filter">Search invoices</label>
+<input id="invoice-filter" type="search" placeholder="Search reference or customer…">
+<label class="sr-only" for="status-filter">Invoice status</label>
+<select id="status-filter">
 <option value="all">All statuses</option>
-<option value="current">Current revision</option>
+<option value="current">Current</option>
 <option value="superseded">Superseded</option>
+<option value="unavailable">Unavailable</option>
 </select>
-<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-text text-[18px]">expand_more</span>
 </div>
 </div>
-</div>
-<div class="w-full flex flex-col" id="table-view">
-<div class="overflow-x-auto w-full -mx-space-lg px-space-lg md:mx-0 md:px-0">
-<table class="w-full text-left border-collapse min-w-[760px]">
+<div class="table-wrap">
+<table>
 <thead>
-<tr class="bg-surface-secondary text-muted-text font-label-sm text-label-sm uppercase tracking-wider">
-<th class="py-3 px-4 rounded-l-xl font-semibold">Invoice Reference</th>
-<th class="py-3 px-4 font-semibold">Customer / Recipient Reference</th>
-<th class="py-3 px-4 font-semibold">Amount &amp; Asset</th>
-<th class="py-3 px-4 font-semibold">Date Published</th>
-<th class="py-3 px-4 font-semibold">Record Status</th>
-<th class="py-3 px-4 rounded-r-xl text-right font-semibold">Action</th>
+<tr>
+<th>Invoice ref &amp; ENS name</th>
+<th>Customer</th>
+<th>Amount</th>
+<th>Published date</th>
+<th>Status</th>
+<th>Action</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-border font-body-sm text-body-sm text-body-text" id="invoice-rows"></tbody>
+<tbody id="invoice-rows">
+</tbody>
 </table>
 </div>
-<div class="pt-space-lg mt-space-sm border-t border-border flex flex-col sm:flex-row items-center justify-between gap-space-sm">
-<p class="font-body-sm text-body-sm text-muted-text">[[tableSummary]]</p>
-<div class="flex items-center gap-2">
-<div class="flex items-center gap-1">
-</div>
-</div>
-</div>
-</div>
+<p class="module-callout">
+<span class="material-symbols-outlined" aria-hidden="true">info</span>Keep your original PDFs. HIR stores invoice details, not PDF files.</p>
 </section>
-<section class="bg-surface rounded-2xl p-space-lg md:p-space-xl shadow-sm flex flex-col gap-space-lg">
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md border-b border-border pb-space-lg">
-<div class="flex flex-col gap-space-xs max-w-2xl">
-<div class="flex items-center gap-2">
-<span class="font-label-sm text-label-sm font-semibold text-primary-blue uppercase tracking-wider">Cryptographic Architecture &amp; ENS Resolution</span>
-<span class="text-outline-variant">•</span>
-<span class="font-label-sm text-label-sm text-muted-text">Decentralized Trust Hierarchy</span>
-</div>
-<h2 class="font-headline-md text-headline-md text-ink font-bold">Hierarchical record model anchored on ENSv2</h2>
-<p class="font-body-sm text-body-sm text-muted-text leading-relaxed">
-        The individual invoice ENS record (<code class="font-mono text-ink font-semibold bg-surface-container-low px-1.5 py-0.5 rounded">[[invoiceName]]</code>) resolves to evidence recorded by the shared HIR invoice smart contract. Counterparties can verify the published document fingerprint, authorized issuer key, and approved receiving destination independently.
-      </p>
-</div>
-<div class="flex items-center gap-2 self-start md:self-auto bg-pale-blue-field/70 border border-primary-blue/20 px-3.5 py-2 rounded-xl">
-<span class="material-symbols-outlined text-primary-blue text-[20px]">account_tree</span>
-<span class="font-label-sm text-label-sm font-semibold text-primary-blue">ENSv2 Universal Namespace</span>
-</div>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-stretch">
-<div class="lg:col-span-5 bg-surface-secondary/70 border border-border p-space-lg rounded-xl flex flex-col justify-between">
-<div>
-<div class="flex items-center justify-between pb-3 border-b border-border/80">
-<span class="font-label-sm text-label-sm font-semibold text-ink uppercase tracking-wider">Namespace Hierarchy Tree</span>
-<span class="font-mono text-[11px] text-muted-text">Registry Tree v2</span>
-</div>
-<div class="mt-space-md space-y-2 font-mono text-body-sm">
-<div class="bg-surface p-3 rounded-lg border border-border flex items-start gap-2.5 shadow-2xs">
-<span class="w-2.5 h-2.5 rounded-full bg-ink mt-1.5 shrink-0"></span>
-<div class="flex flex-col">
-<div class="flex items-center gap-1.5 flex-wrap">
-<span class="text-ink font-bold">[[org]]</span>
-<span class="text-[10px] uppercase font-sans font-semibold bg-surface-secondary text-ink px-1.5 py-0.2 rounded border border-border">Root</span>
-</div>
-<span class="text-xs text-muted-text font-sans">Root Organization ENS Identity</span>
-</div>
-</div>
-<div class="ml-4 pl-3 border-l-2 border-primary-blue/30 space-y-2">
-<div class="bg-surface p-3 rounded-lg border border-border flex items-start gap-2.5 shadow-2xs">
-<span class="w-2.5 h-2.5 rounded-full bg-primary-blue mt-1.5 shrink-0"></span>
-<div class="flex flex-col">
-<div class="flex items-center gap-1.5 flex-wrap">
-<span class="text-ink font-bold">invoices.[[org]]</span>
-<span class="text-[10px] uppercase font-sans font-semibold bg-pale-blue-field text-primary-blue px-1.5 py-0.2 rounded">Authority Node</span>
-</div>
-<span class="text-xs text-muted-text font-sans">Invoice configuration · existing resolver</span>
-</div>
-</div>
-<div class="ml-4 pl-3 border-l-2 border-dark-pink/30">
-<div class="bg-surface p-3 rounded-lg border border-dark-pink/20 bg-blush-field/20 flex items-start gap-2.5 shadow-2xs">
-<span class="w-2.5 h-2.5 rounded-full bg-dark-pink mt-1.5 shrink-0"></span>
-<div class="flex flex-col">
-<div class="flex items-center gap-1.5 flex-wrap">
-<span class="text-ink font-bold">[[invoiceName]]</span>
-<span class="text-[10px] uppercase font-sans font-semibold bg-blush-field text-dark-pink px-1.5 py-0.2 rounded font-sans">Record</span>
-</div>
-<span class="text-xs text-muted-text font-sans">Individual Invoice Record Node</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-text font-sans">
-<span class="flex items-center gap-1">
-<span class="material-symbols-outlined text-[15px] text-success">lock</span>
-Independent public-evidence verification
-</span>
-<span class="font-medium text-ink">Native ENSv2 data records · shared smart contract</span>
-</div>
-</div>
-<div class="lg:col-span-7 flex flex-col justify-between gap-space-sm">
-<div class="bg-surface-secondary/40 border border-border p-space-md rounded-xl flex items-start gap-space-md">
-<div class="w-9 h-9 rounded-xl bg-ink text-on-primary font-bold flex items-center justify-center shrink-0 text-sm">
-1
-</div>
-<div class="flex flex-col">
-<h4 class="font-label-md text-label-md font-bold text-ink flex items-center gap-2">
-Root Organization Node
-<span class="font-mono text-xs font-normal text-muted-text">([[org]])</span>
-</h4>
-<p class="font-body-sm text-body-sm text-muted-text mt-1 leading-relaxed">
-The ENS identity identifies its current onchain controller. Invoice configuration follows the actual permissions of the existing authoritative resolver.
-</p>
-</div>
-</div>
-<div class="bg-surface-secondary/40 border border-border p-space-md rounded-xl flex items-start gap-space-md">
-<div class="w-9 h-9 rounded-xl bg-primary-blue text-on-primary font-bold flex items-center justify-center shrink-0 text-sm">
-2
-</div>
-<div class="flex flex-col">
-<h4 class="font-label-md text-label-md font-bold text-ink flex items-center gap-2">
-Invoice Authority Subname
-<span class="font-mono text-xs font-normal text-muted-text">(invoices.[[org]])</span>
-</h4>
-<p class="font-body-sm text-body-sm text-muted-text mt-1 leading-relaxed">
-Configures custom resolver records and designated authorized issuing keys without transferring root name ownership or compromising treasury security.
-</p>
-</div>
-</div>
-<div class="bg-surface-secondary/40 border border-border p-space-md rounded-xl flex items-start gap-space-md">
-<div class="w-9 h-9 rounded-xl bg-dark-pink text-on-primary font-bold flex items-center justify-center shrink-0 text-sm">
-3
-</div>
-<div class="flex flex-col">
-<h4 class="font-label-md text-label-md font-bold text-ink flex items-center gap-2">
-Individual Invoice Node
-<span class="font-mono text-xs font-normal text-muted-text">([[invoiceName]])</span>
-</h4>
-<p class="font-body-sm text-body-sm text-muted-text mt-1 leading-relaxed">
-Cryptographically maps directly to the shared HIR invoice smart contract entry, supporting independent discovery while the ENS pointer remains available.
-</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section class="bg-surface rounded-2xl p-space-lg md:p-space-xl shadow-sm">
-<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
-<div class="flex flex-col gap-space-xs">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-[20px] text-primary-blue">security</span>
-<h3 class="font-headline-sm text-headline-sm text-ink font-bold">Current Authority Configuration</h3>
-</div>
-<p class="font-body-sm text-body-sm text-muted-text">
-            Parameters configured for invoice signing and settlement destinations.
-          </p>
-</div>
-<a class="inline-flex items-center gap-1.5 text-primary-blue hover:text-ink font-label-md text-label-md font-semibold transition-colors self-start lg:self-center" data-path="setup" href="#" data-action="authority" type="button">
-<span class="">View authority configuration</span>
-<span class="material-symbols-outlined text-[18px]">open_in_new</span>
-</a>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md mt-space-lg">
-<div class="bg-surface-secondary p-space-md rounded-xl flex items-start justify-between">
-<div class="flex flex-col gap-1.5">
-<span class="font-label-sm text-label-sm text-muted-text font-medium">Authorized Signer Key</span>
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-label-md text-label-md font-bold text-ink font-mono select-all">[[issuer]]</span>
-</div>
-<span class="font-label-sm text-label-sm text-muted-text mt-0.5 leading-snug">
-Optional subname alias: <span class="font-mono text-body-text font-medium">Not configured · optional</span> (subname alias is optional; authority is bound to the signing key)
-</span>
-</div>
-<span class="w-8 h-8 rounded-lg bg-surface text-success flex items-center justify-center shadow-xs shrink-0 ml-2">
-<span class="material-symbols-outlined text-[18px]">key</span>
-</span>
-</div>
-<div class="bg-surface-secondary p-space-md rounded-xl flex items-start justify-between">
-<div class="flex flex-col gap-1.5">
-<span class="font-label-sm text-label-sm text-muted-text font-medium">Approved Receiving Destination</span>
-<div class="flex items-center gap-2 flex-wrap">
-<span class="font-label-md text-label-md font-bold text-ink font-mono select-all">[[recipient]]</span>
-<span class="bg-pale-blue-field text-primary-blue font-label-sm text-label-sm px-2 py-0.5 rounded font-semibold">[[symbol]]</span>
-</div>
-<span class="font-label-sm text-label-sm text-muted-text mt-0.5">[[network]]</span>
-</div>
-<span class="w-8 h-8 rounded-lg bg-surface text-primary-blue flex items-center justify-center shadow-xs shrink-0 ml-2">
-<span class="material-symbols-outlined text-[18px]">account_balance</span>
-</span>
-</div>
-</div>
-</section>
-</div>
-</div></main>
+</main>

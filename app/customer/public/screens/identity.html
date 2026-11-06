@@ -1,152 +1,57 @@
-<main class="w-full bg-background min-h-screen flex items-center justify-center p-space-lg"><div class="flex flex-col w-full max-w-[1200px] mx-auto py-space-xl px-space-md">
-<header class="flex flex-col mb-space-2xl">
-<div class="flex items-center gap-space-sm mb-space-xs text-secondary">
-<span class="material-symbols-outlined text-[20px]">verified_user</span>
-<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold text-secondary">Organization Verification</span>
+<main class="invoice-module connect-shell">
+<nav class="setup-trail" aria-label="Organization setup">
+<span aria-current="step">
+<b>1</b>Organization</span>
+<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+<span >
+<b>2</b>Invoice authority</span>
+<span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+<span >
+<b>3</b>Review setup</span>
+</nav>
+<section class="module-panel">
+<h1>Connect your organization</h1>
+<p class="module-intro">Use the ENS name your organization already owns.</p>
+<form id="identity-form">
+<label for="org">Organization ENS name</label>
+<div class="field-action">
+<input id="org" name="org" placeholder="your-organization.eth" required autocomplete="off" spellcheck="false">
+<button class="primary" type="submit">Check organization</button>
 </div>
-<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md pb-space-lg">
-<div class="max-w-xl">
-<h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Set up your issuing identity</h1>
-<p class="font-body-md text-body-md text-body-text mt-space-xs">Establish cryptographic origin proof for enterprise accounts payable. HIR confirms cryptographic control and resolver authority; it does not verify legal incorporation or statutory identity.</p>
+<p class="help">Use an existing ENS name. HIR registers invoice names beneath it, not a new organization domain.</p>
+</form>
+<p id="lookup-status" class="help" role="status">
+</p>
+<div class="status-list">
+<div>
+<span>ENS name</span>
+<strong id="identity-name-state">Not checked</strong>
 </div>
-<div class="flex items-center gap-space-xs self-start md:self-auto px-space-md py-space-xs rounded-full bg-surface-secondary shadow-sm text-muted-text font-label-sm text-label-sm">
-<span class="inline-block w-2 h-2 rounded-full bg-warning animate-pulse"></span>
-<span class="">[[identityState]]</span>
+<div>
+<span>Wallet sign-in</span>
+<strong id="identity-wallet-state">Not signed in</strong>
 </div>
-</div>
-<div class="w-full bg-surface rounded-xl p-space-md shadow-sm mt-space-md">
-<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md relative">
-<div class="flex items-center gap-space-md p-space-sm rounded-lg bg-blush-field">
-<div class="w-10 h-10 rounded-full bg-dark-pink text-surface flex items-center justify-center font-headline-sm text-headline-sm flex-shrink-0 shadow-sm">
-            1
-          </div>
-<div class="flex flex-col min-w-0">
-<span class="font-label-sm text-label-sm text-dark-pink font-semibold uppercase tracking-wider">Step 1</span>
-<span class="font-headline-sm text-headline-sm text-ink font-bold truncate">Connect identity</span>
-</div>
-</div>
-<div class="flex items-center gap-space-md p-space-sm rounded-lg opacity-60">
-<div class="w-10 h-10 rounded-full bg-surface-secondary text-muted-text flex items-center justify-center font-headline-sm text-headline-sm flex-shrink-0">
-            2
-          </div>
-<div class="flex flex-col min-w-0">
-<span class="font-label-sm text-label-sm text-muted-text uppercase tracking-wider">Step 2</span>
-<span class="font-headline-sm text-headline-sm text-ink font-medium truncate">Configure invoice authority</span>
-</div>
-</div>
-<div class="flex items-center gap-space-md p-space-sm rounded-lg opacity-60">
-<div class="w-10 h-10 rounded-full bg-surface-secondary text-muted-text flex items-center justify-center font-headline-sm text-headline-sm flex-shrink-0">
-            3
-          </div>
-<div class="flex flex-col min-w-0">
-<span class="font-label-sm text-label-sm text-muted-text uppercase tracking-wider">Step 3</span>
-<span class="font-headline-sm text-headline-sm text-ink font-medium truncate">Review &amp; finish</span>
+<div>
+<span>Organization permission</span>
+<strong id="identity-permission-state">Not checked</strong>
 </div>
 </div>
+<p class="help">A sign-in message verifies workspace access. It does not authorize an invoice or send an onchain transaction.</p>
+<p class="module-callout warning">
+<span class="material-symbols-outlined" aria-hidden="true">info</span>ENS confirms control of a name, not a company’s legal identity.</p>
+<div class="module-actions">
+<a href="/" class="quiet-link">
+<span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>Back to home</a>
+<div>
+<button class="secondary" data-action="wallet">Connect and sign in</button>
+<button class="blue-button" data-action="check-permissions">Check permissions</button>
+<button class="primary" data-action="authority" disabled>Continue</button>
 </div>
 </div>
-</header>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
-<main class="lg:col-span-8 flex flex-col gap-space-lg">
-<section class="bg-surface rounded-2xl p-space-xl shadow-sm flex flex-col relative overflow-hidden">
-<div class="absolute -right-16 -top-16 w-56 h-56 bg-blush-field rounded-full opacity-40 blur-3xl pointer-events-none"></div>
-<div class="flex items-center gap-space-xs mb-space-xs text-primary-blue">
-<span class="material-symbols-outlined text-[18px]">dns</span>
-<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">Institutional Namespace</span>
-</div>
-<h2 class="font-headline-md text-headline-md text-ink font-bold tracking-tight mb-space-xs">
-          Connect the ENS name your organization controls
-        </h2>
-<p class="font-body-md text-body-md text-body-text mb-space-lg leading-relaxed">Connect an existing ENSv2 identity your organization controls. Authorization is established through permissions configured in your ENS resolver (such as the invoice configuration and record-writer permissions), not merely root domain ownership. ENS establishes cryptographic publishing authority onchain.</p>
-<div class="flex flex-col gap-space-md mb-space-lg"><div><form id="identity-form" class="flex flex-col gap-3"><label class="font-label-md text-ink" for="org">Organization ENS name</label><input id="org" name="org" placeholder="abc.eth" required autocomplete="off" class="w-full rounded-xl bg-surface-secondary px-4 py-3 text-body-md text-ink"><button class="bg-dark-pink text-white rounded-xl py-3 px-5 font-semibold flex gap-2 justify-center" type="submit"><span class="material-symbols-outlined">search_check</span>Look up ENS identity</button></form><p id="lookup-status" class="text-body-sm text-muted-text" role="status">Public lookup needs no wallet. Use your own existing ENSv2 name on Sepolia; this website does not register new names.</p></div></div>
-<div class="flex flex-col sm:flex-row gap-space-md pt-space-xs"><button data-action="wallet" class="bg-dark-pink text-white px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2" type="button"><span class="material-symbols-outlined">account_balance_wallet</span>Connect authorized wallet</button><button data-action="authority" class="bg-surface-secondary text-ink px-6 py-3 rounded-xl font-semibold" type="button">Continue to authority<span class="material-symbols-outlined align-middle">arrow_forward</span></button></div>
-<div class="mt-space-xl p-space-md bg-pale-blue-field rounded-xl flex items-start gap-space-md"><div class="p-2 rounded-lg bg-surface text-primary-blue flex-shrink-0 shadow-sm"><span class="material-symbols-outlined text-[20px]">verified</span></div><div class="flex flex-col"><h4 class="font-label-md text-label-md text-ink font-semibold">Authorized Issuance Scope</h4><p class="font-body-sm text-body-sm text-body-text mt-0.5 leading-relaxed">ENS establishes cryptographic publishing authority onchain. HIR confirms cryptographic control and resolver permissions (including invoice configuration); it does not verify legal incorporation, commercial registries, or statutory identity.</p></div></div>
 </section>
-<section class="bg-surface rounded-2xl p-space-lg shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-md">
-<div class="flex items-start gap-space-md">
-<div class="w-12 h-12 rounded-xl bg-surface-secondary text-muted-text flex items-center justify-center flex-shrink-0">
-<span class="material-symbols-outlined text-[24px]">domain_verification</span>
-</div>
-<div class="flex flex-col">
-<h3 class="font-headline-sm text-headline-sm text-ink font-semibold">Already configured your organization?</h3>
-<p class="font-body-sm text-body-sm text-muted-text mt-0.5 max-w-lg">
-              If your ENS name has already registered an active invoice authority roster, you can proceed directly to your financial operations workspace.
-            </p>
-</div>
-</div>
-<a class="flex items-center justify-center gap-space-xs bg-hover hover:bg-surface-secondary text-ink px-space-lg py-space-sm rounded-xl font-label-md text-label-md font-semibold transition self-start md:self-center whitespace-nowrap" href="#workspace" data-action="workspace" type="button" data-needs-ready="">
-<span class="">Go to workspace</span>
-<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+<div class="return-workspace">
+<span>Already set up?</span>
+<a href="/workspace" data-action="workspace">Open your workspace <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
 </a>
-</section>
-<div class="p-space-lg bg-surface rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-space-lg"><div class="flex items-start gap-space-md"><div class="w-10 h-10 rounded-xl bg-pale-blue-field text-primary-blue flex items-center justify-center flex-shrink-0 mt-0.5"><span class="material-symbols-outlined text-[22px]">verified</span></div><div class="flex flex-col"><span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider text-muted-text">ENSv2 invoice authority</span><h3 class="font-headline-sm text-headline-sm font-bold text-ink mt-0.5">Independent Verification Architecture</h3><p class="font-body-sm text-body-sm text-body-text mt-1 max-w-xl leading-relaxed">Uses the authoritative ENSv2 resolver and individual evidence pointers to let counterparties independently confirm invoice origin. Control reflects resolver authorization rules, not legal entity status.</p></div></div><div class="flex items-center gap-space-xs self-stretch sm:self-auto justify-end"><span class="font-label-sm text-label-sm px-space-md py-1.5 bg-surface-secondary text-ink font-medium rounded-lg border border-border">ENSv2 Standard</span></div></div>
-</main>
-<aside class="lg:col-span-4 flex flex-col gap-space-lg">
-<div class="bg-surface rounded-2xl p-space-lg shadow-sm flex flex-col">
-<div class="flex items-center justify-between pb-space-sm">
-<span class="font-label-sm text-label-sm font-semibold uppercase tracking-wider text-muted-text">Connection Status</span>
-<span class="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-surface-secondary text-muted-text font-label-sm text-label-sm" id="connection-state">[[role]]</span>
-</div>
-<div class="p-space-md rounded-xl bg-surface-secondary flex items-start gap-space-md mt-space-xs">
-<div class="w-9 h-9 rounded-lg bg-surface flex items-center justify-center text-muted-text flex-shrink-0 shadow-sm">
-<span class="material-symbols-outlined text-[20px]">lock</span>
-</div>
-<div class="flex flex-col">
-<span class="font-label-md text-label-md font-semibold text-ink">Wallet permissions</span>
-<span class="font-body-sm text-body-sm text-body-text mt-0.5 leading-snug">Looking up records is public and read-only. Connect a wallet to check its permissions and configure invoice authority. Verification remains read-only.</span>
-</div>
-</div>
-<div class="mt-space-md flex items-center justify-between text-muted-text font-body-sm text-body-sm"><span class="flex items-center gap-1.5 text-body-text font-label-sm text-label-sm font-medium"><span class="material-symbols-outlined text-[16px] text-primary-blue">check_circle</span> Public ENS lookup available</span><span class="font-label-sm text-label-sm text-primary-blue font-semibold">Wallet capability check</span></div>
-</div>
-<div class="bg-surface rounded-2xl p-space-xl shadow-sm flex flex-col">
-<div class="flex items-center gap-space-xs mb-space-xs text-dark-pink">
-<span class="material-symbols-outlined text-[18px]">verified</span>
-<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">Core Benefits</span>
-</div>
-<h3 class="font-headline-md text-headline-md text-ink font-bold tracking-tight mb-space-md">
-          What setup enables
-        </h3>
-<div class="flex flex-col gap-space-lg">
-<div class="flex items-start gap-space-md">
-<div class="w-8 h-8 rounded-lg bg-blush-field text-dark-pink flex items-center justify-center flex-shrink-0 font-semibold text-[14px]">
-              01
-            </div>
-<div class="flex flex-col">
-<h4 class="font-headline-sm text-headline-sm text-ink font-bold">Authorized invoice issuance</h4>
-<p class="font-body-sm text-body-sm text-body-text mt-1 leading-relaxed">Authorize an invoice signer address in ENS configuration while keeping resolver administration separate.</p>
-</div>
-</div>
-<div class="flex items-start gap-space-md">
-<div class="w-8 h-8 rounded-lg bg-pale-blue-field text-primary-blue flex items-center justify-center flex-shrink-0 font-semibold text-[14px]">
-              02
-            </div>
-<div class="flex flex-col">
-<h4 class="font-headline-sm text-headline-sm text-ink font-bold">Approved receiving destinations</h4>
-<p class="font-body-sm text-body-sm text-body-text mt-1 leading-relaxed">Record the approved receiving wallet, asset and network in ENS-backed invoice configuration. Altered PDFs can then be detected.</p>
-</div>
-</div>
-<div class="flex items-start gap-space-md">
-<div class="w-8 h-8 rounded-lg bg-surface-secondary text-ink flex items-center justify-center flex-shrink-0 font-semibold text-[14px]">
-              03
-            </div>
-<div class="flex flex-col">
-<h4 class="font-headline-sm text-headline-sm text-ink font-bold">Independent invoice verification</h4>
-<p class="font-body-sm text-body-sm text-body-text mt-1 leading-relaxed">Empower counterparties to verify invoice cryptographic origin against public ENSv2 records instantly, confirming publisher authority onchain.</p>
-</div>
-</div>
-</div>
-<div class="mt-space-xl pt-space-md flex items-center justify-between bg-surface-secondary p-space-md rounded-xl">
-<div class="flex items-center gap-space-xs">
-<div class="w-6 h-6 rounded bg-ink flex items-center justify-center text-surface font-bold text-[11px]">
-              E2
-            </div>
-<span class="font-label-sm text-label-sm font-semibold text-ink">Powered by ENSv2</span>
-</div>
-<span class="font-label-sm text-label-sm text-muted-text font-medium">Enterprise Core</span>
-</div>
-</div>
-<div class="p-space-lg rounded-2xl bg-primary text-on-primary shadow-sm flex flex-col justify-between"><div class="flex items-center justify-between mb-space-sm"><span class="font-label-sm text-label-sm text-pale-blue-field uppercase font-semibold tracking-wider">Domain Origin Standard</span><span class="material-symbols-outlined text-vivid-magenta text-[20px]">verified</span></div><p class="font-body-sm text-body-sm text-surface leading-relaxed">HIR uses the existing authoritative ENSv2 resolver to configure invoice authority and discover accepted evidence. HIR confirms cryptographic control; it does not verify legal incorporation or statutory identity.</p><div class="mt-space-md pt-space-xs flex items-center gap-space-xs font-label-sm text-label-sm text-pale-blue-field"><span class="inline-block w-1.5 h-1.5 rounded-full bg-success"></span><span class="">Cryptographic origin verification</span></div></div>
-</aside>
-</div>
 </div>
 </main>
