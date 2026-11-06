@@ -1,7 +1,9 @@
+import manifest from '../config/registered-ledger-deployment.json';
+import {ledgerDeploymentStatus} from '../app/customer/ledger-deployment.mjs';
 import {DurableObject} from 'cloudflare:workers';
 import {createPublicClient,http} from 'viem';import {sepolia} from 'viem/chains';
 import {InvoiceAccess} from '../app/customer/access.mjs';import {createInvoiceService,invoiceDraftView} from '../app/customer/service.mjs';import {createPDF} from '../app/customer/pdf.mjs';import {fontBytes} from './fonts.mjs';
-import config from '../config/sepolia.json';import abi from '../config/invoice-ledger-abi.json';import resolverABI from '../config/resolver-abi.json';import universalABI from '../config/universal-abi.json';
+import config from '../config/registered-sepolia.json';import abi from '../config/registered-invoice-ledger-abi.json';import resolverABI from '../config/resolver-abi.json';import universalABI from '../config/universal-abi.json';
 import {verifyReceived} from '../app/customer/verification.mjs';
 export const platform={...config,abi,resolverABI,universalABI,cancellationSupported:false};
 export const json=value=>JSON.stringify(value,(_,v)=>typeof v==='bigint'?v.toString():v);
@@ -16,7 +18,7 @@ function repository(ctx){
 export class InvoiceState extends DurableObject{
  constructor(ctx,env){super(ctx,env);this.env=env;this.repo=repository(ctx);const get=async()=>{if(!this.servicePromise)this.servicePromise=this.createService().catch(e=>{this.servicePromise=null;throw e;});return this.servicePromise;};
   this.client=createPublicClient({chain:sepolia,transport:http(env.HIR_INVOICE_RPC||'https://ethereum-sepolia-rpc.publicnode.com',{timeout:8000,retryCount:0}),cacheTime:0,ccipRead:false});
-  const methods=['capabilities','workspace','organization','asset','prepareDraft','prepareSetup','attachSignature','preparePublication','attachHash','rejected','reconcile','setupStatus','setupHash','rejectSetup'];const service=Object.fromEntries(methods.map(name=>[name,async(...args)=>(await get())[name](...args)]));Object.assign(service,{overview:()=>({records:this.repo.state.drafts}),setupRecords:()=>this.repo.state.setups,record:id=>{const d=this.repo.state.drafts.find(d=>d.id===id);if(!d)throw Error('Invoice not found');return invoiceDraftView(d,platform);},setupRecord:id=>{const s=this.repo.state.setups.find(s=>s.id===id);if(!s)throw Error('Setup not found');return s;}});this.service=service;
+  const methods=['capabilities','workspace','organization','asset','prepareDraft','prepareSetup','attachSignature','preparePublication','attachHash','rejected','reconcile','setupStatus','setupHash','rejectSetup','prepareRegistration','registrationHash','registrationRecheck','registrationRejected'];const service=Object.fromEntries(methods.map(name=>[name,async(...args)=>(await get())[name](...args)]));Object.assign(service,{overview:()=>({records:this.repo.state.drafts.filter(d=>!platform.registeredHierarchy||d.policy?.ledger?.toLowerCase()===platform.ledger.toLowerCase())}),setupRecords:()=>this.repo.state.setups.filter(s=>!platform.registeredHierarchy||s.ledger?.toLowerCase()===platform.ledger.toLowerCase()),record:id=>{const d=this.repo.state.drafts.find(d=>d.id===id);if(!d||platform.registeredHierarchy&&d.policy?.ledger?.toLowerCase()!==platform.ledger.toLowerCase())throw Error('Invoice is not supported by this deployment');return invoiceDraftView(d,platform);},setupRecord:id=>{const s=this.repo.state.setups.find(s=>s.id===id);if(!s||platform.registeredHierarchy&&s.ledger?.toLowerCase()!==platform.ledger.toLowerCase())throw Error('Setup is not supported by this deployment');return s;}});this.service=service;
   this.access=new InvoiceAccess({service,origin:env.HIR_PUBLIC_ORIGIN});for(const row of this.repo.sql.exec('SELECT value FROM sessions WHERE expires > ?',Date.now())){const s=JSON.parse(row.value);if(s.origin===env.HIR_PUBLIC_ORIGIN)this.access.sessions.set(s.id,s);}
  }
  async createService(){const service=await createInvoiceService({baseURL:this.env.HIR_PUBLIC_ORIGIN,client:this.client,platform,repository:this.repo,renderPDF:summary=>createPDF(summary,{fontBytes,origin:this.env.HIR_PUBLIC_ORIGIN})});this.serviceReady=service;return service;}
@@ -25,7 +27,9 @@ export class InvoiceState extends DurableObject{
   const origin=originFor(request,this.env),url=new URL(request.url),route=url.pathname.slice(5);s=this.access.cookie(request.headers.get('cookie')||'');
   if(request.method==='GET'&&route==='session'){const current=s||this.access.create();current.origin=origin;this.persistSessions();return response({token:current.csrf,chainId:platform.chainId,ledger:platform.ledger,cancellationSupported:false,documentStorage:'none',auth:this.access.public(current)},200,{'Set-Cookie':`hir_invoice_session=${current.id}; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800`});}
   if(request.method==='GET'){
-   if(route==='platform')return response({chainId:platform.chainId,network:'Ethereum Sepolia',documentStorage:'none',defaultToken:platform.defaultToken});
+   if(route==='ledger-deployment')return response(await ledgerDeploymentStatus({client:this.client,manifest,hash:url.searchParams.get('hash')}));
+   if(route==='platform')return response({chainId:platform.chainId,network:'Ethereum Sepolia',documentStorage:'none',defaultToken:platform.defaultToken,registeredHierarchy:!!platform.registeredHierarchy});
+   if(route==='setup/pending')return response(this.access.pendingSetup(s));
    if(route==='workspace'||route==='overview'){const view=await this.access.workspace(s,route==='workspace'?url.searchParams.get('org'):s?.org);return response(route==='overview'?{chainId:platform.chainId,records:view.records}:view);}
    const doc=route.match(/^document\/([a-f0-9-]{36})\.(pdf|json)$/),draft=route.match(/^draft\/([a-f0-9-]{36})$/);
    if(doc||draft){const d=await this.access.record(s,(doc||draft)[1]);if(doc&&doc[2]==='pdf')return response({error:'HIR does not store PDFs. Use your downloaded original.'},410);if(doc)return response({kind:'HIR-ENS-invoice-evidence',chainId:platform.chainId,ledger:platform.ledger,name:d.name,bundle:d.bundle,expectedSupplierMustBeChosenIndependently:true});return response(d);}
@@ -39,7 +43,7 @@ export class InvoiceState extends DurableObject{
   if(route==='auth/logout'){this.access.logout(s);this.persistSessions();return response({authenticated:false});}
   if(route==='organization'||route==='capabilities')return response(await this.service[route](b.org,b.account));
   if(route==='verify')return response(await verifyReceived({client:this.client,platform,name:b.name,expectedOrg:b.expectedOrg,bytes:b.pdfBase64?Buffer.from(b.pdfBase64,'base64'):undefined}));
-  if(['setup','setup/receipt','setup/status','setup/rejected','draft','signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(route)){const result=await this.access.call(s,route,b);this.persistSessions();return response(result);}
+  if(['registration','registration/hash','registration/recheck','registration/rejected','setup','setup/receipt','setup/status','setup/rejected','draft','signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(route)){const result=await this.access.call(s,route,b);this.persistSessions();return response(result);}
   return response({error:'Not found'},404);
  }catch(error){this.persistSessions();return response({error:error.shortMessage||error.message},error.status||400);}}
 }

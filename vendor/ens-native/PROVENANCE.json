@@ -7,7 +7,8 @@
     "ETHRegistry.json": "7100d176ec972990c494d82353b2da5ecd51cb57ca833a2a65bd91310923af73",
     "PermissionedResolverImpl.json": "925a26048d725e321c2280f131a7af57f2768c77be572c0424faebc127e67a9f",
     "UniversalResolverV2.json": "d4d4b5a98a0273bf522b9db1ddf4f5223bf8693a5844c48a96ee58297535405b",
-    "VerifiableFactory.json": "c9b4ad246ff57fccabf8c2642faafe96c3ce1aa39cb3a010dc4151649866a8b5"
+    "VerifiableFactory.json": "c9b4ad246ff57fccabf8c2642faafe96c3ce1aa39cb3a010dc4151649866a8b5",
+    "UserRegistryImpl.json": "e1610362063092c3fb442006bdabd855f4fd4eeffdf6247ceda1705a2ff17bdd"
   },
   "licenses": [
     {

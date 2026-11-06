@@ -1,0 +1,4 @@
+# Deployment metadata hashes the exact new contract source bytes.
+contracts/invoice-record/HirRegisteredInvoiceLedger.sol text eol=lf
+# Preserve the checksum of the extracted official deployment fixture.
+vendor/ens-native/UserRegistryImpl.json -text

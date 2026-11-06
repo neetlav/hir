@@ -1,5 +1,5 @@
 import {recoverTypedDataAddress} from 'viem';
-import {authenticateEvent,equal as eq,Mismatch,requireMatch as need} from '../shared/chain-evidence.mjs';
+import {authenticateEvent,rawLogEqual,equal as eq,Mismatch,requireMatch as need} from '../shared/chain-evidence.mjs';
 import * as p from './protocol.mjs';
 import {verificationDiagnostic} from '../shared/verification-reads.mjs';
 export async function verifyInvoice({client,abi,anchor,bundle,documentBytes}){
@@ -19,6 +19,13 @@ export async function verifyInvoice({client,abi,anchor,bundle,documentBytes}){
   need(eq(v.recipient,policy.recipient)&&eq(v.token,policy.token)&&v.paymentChainId===policy.paymentChainId,'unapprovedHistoricalDestination');
   const record=await client.readContract({address:anchor.ledger,abi,functionName:'accepted',args:[e.digest],blockNumber:proof.receipt.blockNumber});
   need(eq(record[0],v.scope)&&eq(record[1],v.invoiceId)&&eq(record[2],v.policyHash)&&eq(record[3],signer)&&record[4]===proof.receipt.blockNumber,'acceptanceStorageMismatch');
+  if(anchor.requireRegistration){
+   const registrationEvent=abi.find(x=>x.type==='event'&&x.name==='InvoiceRegistrationChecked');need(registrationEvent,'registeredLedgerRequired');
+   const logs=await client.getLogs({address:anchor.ledger,event:registrationEvent,args:{digest:e.digest},fromBlock:proof.receipt.blockNumber,toBlock:proof.receipt.blockNumber,strict:true});
+   need(logs.length===1&&proof.receipt.logs.some(log=>rawLogEqual(log,logs[0])),'registrationEvidenceUnavailable');const registration=logs[0].args;
+   need(eq(registration.owner,policy.controller)&&eq(registration.resolver,policy.resolver)&&registration.invoiceExpiry>proof.acceptedBlock.timestamp&&registration.namespaceExpiry>=registration.invoiceExpiry&&registration.organizationExpiry>=registration.namespaceExpiry,'historicalRegistrationMismatch');
+   out.registration={...registration,registeredAtAcceptance:true};pass('registeredName','registeredAtLedgerAcceptance');
+  }
   pass('historicalAuthenticity','authorizedAtLedgerAcceptance',{signer,controller:policy.controller,resolver:e.resolver,policyHash:v.policyHash});
   if(documentBytes!==undefined)f.documentIntegrity={status:eq(p.hash(documentBytes),v.pdfHash)?'pass':'fail',code:eq(p.hash(documentBytes),v.pdfHash)?'finalPDFMatches':'receivedPDFChanged'};else f.documentIntegrity={status:'unknown',code:'receivedPDFNotProvided'};
   const head=await client.readContract({address:anchor.ledger,abi,functionName:'heads',args:[v.scope,v.invoiceId],blockNumber:snapshot.number});
