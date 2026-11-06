@@ -37,3 +37,5 @@ Current pointer or ownership changes cannot rewrite accepted historical evidence
 No correction-creation UI, cancellation, general configuration editor, contract-wallet issuers, email delivery, custody or Agents. Existing ledger revision history remains verifiable. A single SQLite Durable Object coordinates this initial application; this is not a high-throughput multi-region invoice backend. Private metadata is Cloudflare account data and must be protected accordingly. PDFs remain with their issuer/recipient.
 
 The preserved Node reference server (`npm run app:start`) and its local state are not used by the deployed Worker. Local files are never imported or migrated into cloud state automatically.
+
+Recipient verification permits at most one additional RPC read for a transient connection, timeout, rate-limit or temporarily missing block/transaction response. The retry uses the same method and arguments; it never submits a transaction or skips an evidence check. Persistent failures remain unknown and include a safe operation/error category in the verification details. Contract reverts, evidence mismatches and altered PDFs are not retried into a pass.

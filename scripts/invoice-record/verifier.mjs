@@ -1,6 +1,7 @@
 import {recoverTypedDataAddress} from 'viem';
 import {authenticateEvent,equal as eq,Mismatch,requireMatch as need} from '../shared/chain-evidence.mjs';
 import * as p from './protocol.mjs';
+import {verificationDiagnostic} from '../shared/verification-reads.mjs';
 export async function verifyInvoice({client,abi,anchor,bundle,documentBytes}){
  const out={kind:'HIR-invoice-only-verification',safeToPay:'notAssessed',ownershipContinuity:'notProvenByCurrentBinding',findings:{}};const f=out.findings;
  const pass=(key,code,extra={})=>f[key]={status:'pass',code,...extra};
@@ -31,6 +32,6 @@ export async function verifyInvoice({client,abi,anchor,bundle,documentBytes}){
   }catch(error){const reverted=error.walk?.(e=>e.name==='ContractFunctionRevertedError');f.currentIdentity={status:reverted?'fail':'unknown',code:reverted?'currentENSBindingOrPolicyInvalid':'currentENSReadUnavailable'};f.currentPolicy={status:'unknown',code:'currentPolicyUnavailable'};f.currentDestination={status:'unknown',code:'currentApprovalUnavailable'};}
   out.acceptance={transactionHash:proof.receipt.transactionHash,logIndex:proof.log.logIndex,blockNumber:proof.receipt.blockNumber,blockHash:proof.receipt.blockHash,digest:e.digest};
   out.invoice=v;out.checkedAt={blockNumber:snapshot.number,blockHash:snapshot.hash};out.reference={namespace:p.namespace(anchor.expectedOrg),invoiceId:v.invoiceId,independentENSLeafRecord:false};
- }catch(error){f.verification={status:error instanceof Mismatch?'fail':'unknown',code:error instanceof Mismatch?error.message:'rpcOrEvidenceUnavailable'};}
+ }catch(error){f.verification={status:error instanceof Mismatch?'fail':'unknown',code:error instanceof Mismatch?error.message:'rpcOrEvidenceUnavailable',...(error instanceof Mismatch?{}:{message:'Blockchain evidence could not be read. Please try verification again shortly.',diagnostic:verificationDiagnostic(error)})};}
  return out;
 }

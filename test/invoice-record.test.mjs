@@ -1,5 +1,15 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {zeroAddress,zeroHash,encodeFunctionData,decodeEventLog} from 'viem';
 import {invoiceFixture} from './helpers/invoice-record-fixture.mjs';import {compile} from '../scripts/invoice-record/compile.mjs';import * as p from '../scripts/invoice-record/protocol.mjs';import {discover,verifyHistorical} from '../scripts/invoice-record/discovery.mjs';
+import {verificationReads,verificationDiagnostic} from '../scripts/shared/verification-reads.mjs';
+
+test('verification read retries are bounded and never repeat writes or deterministic failures',async t=>{
+ const timeout=()=>Object.assign(Error('private RPC URL and request data'),{name:'TimeoutError'});
+ await t.test('a transient read recovers once with identical arguments',async()=>{const calls=[],args={hash:'public-test-hash'},client=verificationReads({getTransactionReceipt:async a=>{calls.push(a);if(calls.length===1)throw timeout();return'accepted';}});assert.equal(await client.getTransactionReceipt(args),'accepted');assert.deepEqual(calls,[args,args]);});
+ await t.test('one shared retry budget covers the entire verification',async()=>{let first=0,second=0;const client=verificationReads({getBlock:async()=>{if(++first===1)throw timeout();return{};},getCode:async()=>{second++;throw timeout();}});await client.getBlock();await assert.rejects(client.getCode(),e=>{assert.deepEqual(verificationDiagnostic(e),{operation:'getCode',errorType:'TimeoutError',retried:false});return true;});assert.equal(first,2);assert.equal(second,1);});
+ await t.test('persistent timeouts stop after two calls without leaking RPC details',async()=>{let calls=0;const client=verificationReads({getBlock:async()=>{calls++;throw timeout();}});await assert.rejects(client.getBlock(),e=>{assert.deepEqual(verificationDiagnostic(e),{operation:'getBlock',errorType:'TimeoutError',retried:true});assert.ok(!JSON.stringify(verificationDiagnostic(e)).includes('private'));return true;});assert.equal(calls,2);});
+ await t.test('reverts, invalid responses and unauthorized HTTP responses are not retried',async()=>{for(const error of [Object.assign(timeout(),{name:'ContractFunctionRevertedError'}),Error('decode failure'),Object.assign(timeout(),{name:'HttpRequestError',status:401})]){let calls=0;const client=verificationReads({readContract:async()=>{calls++;throw error;}});await assert.rejects(client.readContract());assert.equal(calls,1);}});
+ await t.test('write methods are not wrapped or repeated',async()=>{let calls=0;const write=async()=>{calls++;throw timeout();},client=verificationReads({sendTransaction:write});assert.equal(client.sendTransaction,write);await assert.rejects(client.sendTransaction());assert.equal(calls,1);});
+});
 const errorName=e=>e.walk?.(x=>x.name==='ContractFunctionRevertedError')?.data?.errorName;
 test('atomic ENS invoice record: real native resolver, isolated negative scenarios',async t=>{
  const f=await invoiceFixture();try{
