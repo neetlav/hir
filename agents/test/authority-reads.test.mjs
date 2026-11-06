@@ -26,3 +26,18 @@ test('transient authority recovery grants a valid proof, persistent failure neve
   if(persistent){await assert.rejects(()=>sessions.verify(s,proof),e=>e.status===503);assert.equal(sessions.public(s).authenticated,false);assert.equal(calls,3);}else{assert.equal((await sessions.verify(s,proof)).authenticated,true);assert.equal(calls,2);}await assert.rejects(()=>sessions.verify(s,proof),e=>e.status===401);
  }
 });
+
+test('an unavailable permission read blocks access without erasing or extending an authenticated session',async()=>{
+ const account=privateKeyToAccount(generatePrivateKey());let now=Date.now(),mode='allowed';
+ const sessions=new WalletSessions({origin:'https://hir-agents.test.workers.dev',now:()=>now,operator:async()=>{if(mode==='outage')throw missing();return{allowed:mode==='allowed'};}}),s=sessions.create(),challenge=sessions.challenge(s,{account:account.address,org:'example.eth',chainId:11155111});
+ await sessions.verify(s,{signature:await account.signMessage({message:challenge.message})});s.contextId='selected-policy';const before={...sessions.public(s)},epoch=s.epoch;
+ mode='outage';await assert.rejects(()=>sessions.require(s),e=>e.status===503);assert.deepEqual(sessions.public(s),before);assert.equal(s.epoch,epoch);
+ mode='allowed';await sessions.require(s);assert.equal(s.contextId,'selected-policy');assert.equal(s.expires,new Date(before.expiresAt).getTime());
+ mode='denied';await assert.rejects(()=>sessions.require(s),e=>e.status===403);assert.equal(sessions.public(s).authenticated,false);
+});
+
+test('logout during a failed authority read cannot restore the signed session',async()=>{
+ const account=privateKeyToAccount(generatePrivateKey());let fail;
+ const sessions=new WalletSessions({origin:'https://hir-agents.test.workers.dev',operator:async()=>({allowed:true})}),s=sessions.create(),challenge=sessions.challenge(s,{account:account.address,org:'example.eth',chainId:11155111});await sessions.verify(s,{signature:await account.signMessage({message:challenge.message})});
+ sessions.operator=()=>new Promise((resolve,reject)=>{fail=reject;});const pending=sessions.require(s);sessions.logout(s);fail(missing());await assert.rejects(()=>pending,e=>e.status===401);assert.equal(sessions.public(s).authenticated,false);
+});
