@@ -1,6 +1,14 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {WorkspaceWallet} from '../app/wallet.mjs';
+import {Workspace} from '../app/service.mjs';
+import {nameAvailability} from '../app/setup.mjs';
 const hash='0x'+'a'.repeat(64),blockHash='0x'+'b'.repeat(64),from='0x'+'1'.repeat(40),to='0x'+'2'.repeat(40);
+test('name availability follows the actual registry observation without assuming a future hierarchy is free',()=>{
+ assert.equal(nameAvailability({status:'registered'}),'registered');
+ assert.equal(nameAvailability({status:'requester-unregistered',requester:{status:0,latestOwner:'0x'+'0'.repeat(40)}}),'available');
+ for(const requester of [{status:0,latestOwner:from},{status:1,latestOwner:'0x'+'0'.repeat(40)},undefined])assert.equal(nameAvailability({status:'requester-unregistered',requester}),'conflict');
+ assert.equal(nameAvailability({status:'namespace-unregistered'}),'pending-hierarchy');assert.equal(nameAvailability({status:'organization-prerequisite'}),'pending-hierarchy');assert.equal(nameAvailability({status:'unavailable'}),'unavailable');
+});
 function fixture(operation='registration'){
  const row={key:'original',operation,status:'submitted',hash,transaction:{from,to,data:'0x1234',nonce:'0x3',chainId:'0xaa36a7',value:'0x0'},planId:'original-plan',contextId:'original-context',jobId:'original-job'};
  let state={operations:{original:structuredClone(row)}};const receipt={transactionHash:hash,blockNumber:10n,blockHash,transactionIndex:0,status:'reverted'},tx={hash,from,to,input:'0x1234',nonce:3,chainId:11155111,value:0n,blockNumber:10n,blockHash,transactionIndex:0};
@@ -33,4 +41,9 @@ for(const [name,alter]of [
  ['nonce not consumed',f=>{f.client.getTransactionCount=async()=>3;}]
 ])test('a previously verified failure with '+name+' becomes unresolved and cannot unlock a new intent',async()=>{
  const f=fixture();await f.wallet.confirm('original');alter(f);await assert.rejects(()=>f.wallet.intent({operation:'registration',planId:'another-plan',account:from}));assert.equal(f.state().status,'submitted');assert.equal(f.state().hash,hash);assert.deepEqual(f.state().transaction,f.row.transaction);
+});
+for(const status of ['rejected','failed'])test('a historical '+status+' plan cannot become pending setup after a later confirmation',async()=>{
+ const wallet={operations:{old:{operation:'registration',status,preparedAt:'2026-11-06T10:00:00.000Z'},new:{operation:'registration',status:'confirmed',preparedAt:'2026-11-06T10:01:00.000Z'}}},profile={id:'selected',trust:{org:'organization.eth',label:'analysis'},policy:{validUntil:9999999999}};
+ const workspace=new Workspace({contexts:{list:async()=>[profile],selected:async()=>profile,jobs:async()=>[]},wallet:{state:async()=>wallet},db:{get:()=>null},runtime:{current:new Map()},setup:{plan:()=>{throw Error('A historical plan must not be reopened');}}});
+ const state=await workspace.status();assert.equal(state.pendingSetup,null);assert.equal(state.pendingPlan,null);assert.equal(state.wallet.operations.old.status,status);
 });

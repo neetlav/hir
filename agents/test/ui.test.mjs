@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {accessView,setupView,policyView,interactionView,historyView,walletProgress} from '../public/views.mjs';
 import {SAMPLE} from '../src/analysis.mjs';
+import {walletOperation} from '../public/wallet-state.mjs';
 import {registrationPanel} from '../public/registration-view.mjs';
 const org='organization.eth',label='analysis',name=label+'.agents.'+org,requester='0x0000000000000000000000000000000000000001',receiver='0x0000000000000000000000000000000000000002',wallet='0x0000000000000000000000000000000000000003';
 const profile={id:'context',name,trust:{org,label,requester,receiver,controller:wallet,resolver:receiver,evidence:requester,chainId:11155111},policy:{validAfter:1793970000,validUntil:1794000000},publication:{nativeObserved:true}};
@@ -52,4 +53,17 @@ test('analysis scope names the actual fixed dataset and preserves real agent cho
 });
 test('current name registration and published policy remain independent findings',()=>{
  const model=base();model.current={status:'unregistered',policyStatus:'valid',registration:{status:'namespace-unregistered'}};const html=policyView(model);assert.match(html,/Published permissions verified/);assert.match(html,/Registration not confirmed/);assert.match(html,/Continue name setup/);assert.doesNotMatch(html,/Ready for new interactions/);
+});
+for(const status of ['rejected','failed'])test('historical '+status+' request does not block the next stage after a later confirmation',()=>{
+ const model=base(),old={...op(status),key:'registration:old',operation:'registration',preparedAt:'2026-11-06T10:00:00.000Z'},latest={...op('confirmed'),key:'registration:new',operation:'registration',preparedAt:'2026-11-06T10:01:00.000Z'};
+ model.wallet.operations={[old.key]:old,[latest.key]:latest};assert.equal(walletOperation(model),null);assert.equal(walletProgress(model),'');
+ const html=setupView(model,{org,label,checked:{...check(),registration:{status:'namespace-unregistered',nextStage:'set-agents-parent'}},keys:{requester,receiver}});assert.match(html,/data-action="register-name">/);assert.doesNotMatch(html,/Approval declined|Transaction failed/);assert.equal(model.wallet.operations[old.key].status,status);
+});
+test('the current declined or failed request remains the exact displayed retry target',()=>{
+ const model=base();for(const status of ['rejected','failed']){const old={...op('confirmed'),key:'old',preparedAt:'2026-11-06T10:00:00.000Z'},latest={...op(status),key:'new',preparedAt:'2026-11-06T10:01:00.000Z'};model.wallet.operations={old,new:latest};assert.equal(walletOperation(model),latest);assert.match(walletProgress(model),/data-action="wallet-retry"/);}
+});
+test('an explicit name check reports observed availability and wallet access separately',()=>{
+ for(const [nameStatus,text]of [['available','Name available'],['registered','Registered to your organization'],['conflict','Name unavailable'],['unavailable','Name check unavailable'],['pending-hierarchy','Complete the group names first']]){
+  const html=setupView(base(),{org,label:'user-chosen',newAgent:true,checked:{...check(),name:'user-chosen.agents.'+org,nameStatus,permission:true},keys:{requester,receiver}});assert.match(html,/Check name and access/);assert.ok(html.includes(text));assert.match(html,/user-chosen.agents.organization.eth/);assert.match(html,/Publication access verified for this wallet/);
+ }
 });
