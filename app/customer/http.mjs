@@ -13,7 +13,7 @@ return async(req,res)=>{try{
   if(req.headers.origin!==baseURL||(!s||req.headers['x-hir-session']!==s.csrf)||!String(req.headers['content-type']).startsWith('application/json'))return send(res,403,{error:'Local session and origin required'});const b=await body(req);
   if(u.pathname==='/api/organization')return send(res,200,await service.organization(b.org));
   if(u.pathname==='/api/capabilities')return send(res,200,await service.capabilities(b.org,b.account));
-  if(['registration','registration/hash','registration/recheck','registration/rejected','setup','setup/receipt','setup/status','setup/rejected','draft','signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(u.pathname.slice(5)))return send(res,200,await access.call(s,u.pathname.slice(5),b));
+  if(['registration','registration/hash','registration/recheck','registration/rejected','setup','setup/dispatch','setup/receipt','setup/status','setup/rejected','draft','signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(u.pathname.slice(5)))return send(res,200,await access.call(s,u.pathname.slice(5),b));
   if(u.pathname==='/api/verify')return send(res,200,await service.verify({name:b.name,expectedOrg:b.expectedOrg,bytes:b.pdfBase64?Buffer.from(b.pdfBase64,'base64'):undefined}));
   return send(res,404,{error:'Unknown invoice action'});
  }

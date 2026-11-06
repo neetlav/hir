@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {summary,renderVerification} from '../app/customer/public/presentation.mjs';
-import {renderOperationState} from '../app/customer/public/invoice-states.mjs';
+import {renderOperationState,setupOperation} from '../app/customer/public/invoice-states.mjs';
 const pass={status:'pass'},result=()=>({findings:{historicalAuthenticity:pass,documentIntegrity:pass,currentIdentity:pass,currentDestination:pass,currentRevision:{status:'pass',code:'currentRevision'},currentRegistration:pass},request:{expectedOrg:'expected.eth',name:'inv-one.invoices.expected.eth'}});
 test('verification presentation keeps backend findings independent and never announces success over an essential failure',()=>{
  assert.equal(summary(result()).tone,'good');for(const key of ['historicalAuthenticity','documentIntegrity','currentIdentity','currentDestination','currentRevision','currentRegistration'])for(const status of ['fail','unknown']){const r=result();r.findings[key]={status};assert.notEqual(summary(r).tone,'good',key+' '+status);}
@@ -17,3 +17,5 @@ test('wallet states distinguish signing, confirmation, decline, known failure an
  assert.match(renderOperationState({phase:'ambiguous'}),/Check the existing transaction before another request/);
  assert.doesNotMatch(renderOperationState({phase:'pending'}),/cannot be duplicated/);
 });
+
+test('setup preview names the actual operation without exposing contract jargon',()=>{for(const purpose of ['Create the organization’s official ENS subregistry.','Set the organization registry’s canonical ENS parent.','Create the official invoice subregistry.','Set the invoice registry’s canonical parent to the organization registry.','Attach the organization’s subregistry to its registered ENS identity.','Register invoices under the organization, owned by the organization owner.','Publish the reviewed receiving policy for the new guarded ledger']){const operation=setupOperation(purpose,'example.eth');assert.ok(operation.title&&operation.purpose);assert.doesNotMatch(operation.title+' '+operation.purpose,/subregistry|canonical|ledger|calldata/);}assert.equal(setupOperation('Register invoices under the organization','example.eth').title,'Register invoices.example.eth');assert.match(renderOperationState({phase:'prepared'}),/No wallet request has been sent/);});
