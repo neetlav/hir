@@ -1,0 +1,8 @@
+{
+  "upstream": "https://github.com/ensdomains/contracts-v2",
+  "revision": "07e55a056f5b6a9c90119f501bdd05714e67dddd",
+  "source": "contracts/deployments/sepolia/UserRegistryImpl.json",
+  "artifact": "UserRegistryImpl.json",
+  "sha256": "c7fa9a2c96d0ef4aebb59657d2f1e50149c9c97606135ac949afc2b4cbeece39",
+  "license": "MIT; upstream LICENSE.txt retained alongside the artifact"
+}

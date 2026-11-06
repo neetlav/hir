@@ -9,7 +9,7 @@
   },
   "scripts": {
     "compile": "node src/compile.mjs",
-    "test": "node --test test/ens.test.mjs test/evidence.test.mjs test/policy.test.mjs test/authority-reads.test.mjs",
+    "test": "node --test test/ens.test.mjs test/evidence.test.mjs test/policy.test.mjs test/authority-reads.test.mjs test/registration.test.mjs",
     "verify": "node src/verify-cli.mjs",
     "build": "node scripts/build-worker.mjs",
     "worker:check": "wrangler deploy --dry-run --outdir build/dry-run",

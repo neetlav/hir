@@ -27,5 +27,5 @@ export async function fixture({chainId=31337}={}){
  const policy={version:1,chainId:BigInt(chainId),orgNode:n.orgNode,agentNode:n.agentNode,controller:admin.address,ownershipResource:state.resource,resolver:resolver.address,generation:p.textHash('isolated-agents-generation'),requester:requester.address,receiver:receiver.address,action:p.ACTION,priceTable:p.TABLE,validAfter:0n,validUntil:expiry-1n,maxCredits:50};
  const trust={...policy,org,universal:universal.address,registry:registry.address};
  const configure=(value=p.encodePolicy(policy))=>send(resolver,'setData',[p.wire(n.agent),p.KEY,value]);await configure();
- return{testKeys:{requester:privateKeys[1],receiver:privateKeys[2]},connection,provider,client,wallet,admin,requester,receiver,other,registry,resolver,universal,policy,trust,n,deploy,send,read,configure};
+ return{labels,factory,roles,testKeys:{requester:privateKeys[1],receiver:privateKeys[2]},connection,provider,client,wallet,admin,requester,receiver,other,registry,resolver,universal,policy,trust,n,deploy,send,read,configure};
 }
