@@ -1,0 +1,3 @@
+import {readFile} from 'node:fs/promises';import {createPublicClient,http} from 'viem';import {sepolia} from 'viem/chains';
+export async function loadPlatform(){const read=async f=>JSON.parse(await readFile(new URL('../../config/'+f,import.meta.url)));return{...await read('sepolia.json'),abi:await read('invoice-ledger-abi.json'),resolverABI:await read('resolver-abi.json'),universalABI:await read('universal-abi.json'),cancellationSupported:false};}
+export function publicClient(){return createPublicClient({chain:sepolia,transport:http(process.env.HIR_INVOICE_RPC||'https://ethereum-sepolia-rpc.publicnode.com',{timeout:20000,retryCount:1}),cacheTime:0,ccipRead:false});}

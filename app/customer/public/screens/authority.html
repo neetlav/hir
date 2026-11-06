@@ -1,0 +1,135 @@
+<form id="authority-form"><main class="w-full bg-background min-h-screen flex items-center justify-center p-space-lg"><div class="flex flex-col w-full">
+<div class="w-full max-w-[1440px] mx-auto px-6 py-8 md:py-10 flex flex-col gap-8">
+<header class="flex flex-col gap-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blush-field text-dark-pink font-label-sm text-label-sm uppercase tracking-wide">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+            Organization Verification
+          </span>
+<span class="text-outline text-label-sm">•</span>
+<span class="text-muted-text font-label-sm text-label-sm">Setup Pipeline</span>
+</div>
+<div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-surface shadow-sm">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
+</span>
+<div class="flex items-center gap-2">
+<span class="text-ink font-label-md text-label-md font-semibold">[[org]]</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-secondary text-muted-text font-label-sm text-label-sm">[[shortAccount]] · [[role]]</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
+<div class="max-w-3xl">
+<h1 class="font-headline-xl text-headline-xl text-ink tracking-tight mb-2">
+            Configure invoice authority &amp; receiving routes
+          </h1>
+<p class="font-body-lg text-body-lg text-body-text max-w-2xl">Assign designated keyholders to sign commercial invoices on behalf of <span class="font-medium text-ink">[[org]]</span>, and configure verified receiving addresses on ENS. This milestone does not expose changes to an active configuration.</p>
+</div>
+</div>
+<div class="w-full bg-surface rounded-2xl p-4 shadow-sm">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<div class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-surface-secondary/70 transition-all">
+<div class="w-8 h-8 rounded-full bg-success text-on-primary flex items-center justify-center font-label-md text-label-md flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-muted-text">Step 1</span>
+<span class="font-label-md text-label-md text-ink font-semibold truncate">Identity connected</span>
+</div>
+<span class="ml-auto text-success">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</span>
+</div>
+<div class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-blush-field/60 shadow-sm relative overflow-hidden transition-all">
+<div class="w-8 h-8 rounded-full bg-dark-pink text-on-primary flex items-center justify-center font-label-md text-label-md font-bold flex-shrink-0 shadow-sm">
+              2
+            </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-dark-pink font-semibold">Step 2 · Active</span>
+<span class="font-label-md text-label-md text-ink font-bold truncate">Configure invoice authority</span>
+</div>
+<div class="ml-auto w-2 h-2 rounded-full bg-dark-pink"></div>
+</div>
+<div class="flex items-center gap-3.5 px-4 py-3 rounded-xl bg-surface-container-low/40 opacity-70 transition-all">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-muted-text flex items-center justify-center font-label-md text-label-md flex-shrink-0 font-medium">
+              3
+            </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-muted-text">Step 3</span>
+<span class="font-label-md text-label-md text-muted-text font-medium truncate">Review &amp; finish</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<section class="lg:col-span-8 flex flex-col gap-6">
+<div class="bg-surface rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-pale-blue-field text-primary-blue flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">domain</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wide text-muted-text">Organization Domain</span>
+<span class="font-headline-sm text-headline-sm text-ink font-bold">[[org]]</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<span class="px-3 py-1 rounded-full bg-pale-blue-field text-primary-blue font-label-sm text-label-sm font-semibold flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-blue"></span>
+              Active ENSv2 Node
+            </span>
+<span class="px-3 py-1 rounded-full bg-lavender-field text-ink font-label-sm text-label-sm font-medium">[[configState]]</span>
+</div>
+</div>
+<div class="bg-surface rounded-2xl p-7 shadow-sm flex flex-col gap-6"><div class="flex flex-col gap-1.5"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary-blue text-[20px]">key</span><h2 class="font-headline-md text-headline-md text-ink">Authorized invoice issuer</h2></div><p class="font-body-md text-body-md text-body-text">Designate the authorized wallet address permitted to sign outgoing commercial invoices. This website can create a first configuration. Editing an active configuration is not exposed in this milestone.</p></div><div class="flex flex-col gap-2"><div class="flex items-center justify-between"><label class="font-label-md text-label-md font-semibold text-ink" for="issuer-address">Authorized Signing Wallet Address</label><span class="font-label-sm text-label-sm text-muted-text">Primary Signing Authority</span></div><div class="relative flex items-center"><input class="w-full h-13 py-3.5 pl-4 pr-4 rounded-xl bg-surface-secondary text-ink font-body-md text-body-md font-mono font-medium focus:outline-none  shadow-inner text-[15px]" id="setup-issuer" type="text" value="" name="issuer" required="" pattern="0x[0-9a-fA-F]{40}" placeholder="0x…"><div class="absolute right-3 flex items-center gap-2"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blush-field text-dark-pink font-label-sm text-label-sm font-semibold"><span class="material-symbols-outlined text-[15px]">check_circle</span>Signer address</span></div></div><div class="flex items-center gap-2 pt-1"><span class="material-symbols-outlined text-muted-text text-[16px]">link</span><span class="font-label-sm text-label-sm text-muted-text">Optional subname identifier:</span><span class="font-label-sm text-label-sm font-medium text-ink">Not configured · optional</span><span class="text-outline text-label-sm">•</span><span class="font-label-sm text-label-sm text-muted-text">(An ENS alias is optional; the authorized wallet address is primary)</span></div></div><div class="p-4 rounded-xl bg-surface-secondary flex items-start gap-3"><span class="material-symbols-outlined text-primary-blue text-[20px] flex-shrink-0 mt-0.5">lock_clock</span><div class="flex flex-col gap-0.5"><span class="font-label-md text-label-md font-semibold text-ink">Key separation policy</span><p class="font-body-sm text-body-sm text-muted-text leading-relaxed">Invoice authorization lets this wallet sign invoice statements. It does not grant ENS ownership or resolver administration. Editing an active configuration is not exposed here.</p></div></div></div>
+<div class="bg-surface rounded-2xl p-7 shadow-sm flex flex-col gap-6"><div class="flex flex-col gap-1.5"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-dark-pink text-[20px]">account_balance</span><h2 class="font-headline-md text-headline-md text-ink">Approved receiving destination</h2></div><p class="font-body-md text-body-md text-body-text">Define the approved settlement account recorded on ENS. Invoices issued under <span class="font-semibold text-ink">[[org]]</span> must direct payments to this registered destination. This milestone supports first configuration and reuse; it does not expose edits to active configuration.</p></div><div class="rounded-xl bg-surface-secondary/70 p-5 flex flex-col gap-4"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-primary-blue shadow-sm"><span class="material-symbols-outlined text-[18px]">account_balance_wallet</span></div><div><span class="font-label-md text-label-md font-bold text-ink">Corporate Receiving Route</span><span class="block font-label-sm text-label-sm text-body-text">Approved destination for client invoice settlement</span></div></div><div class="flex items-center gap-1.5"><span class="px-2.5 py-0.5 rounded-full bg-pale-blue-field text-primary-blue font-label-sm text-label-sm font-semibold">Primary Route</span><span class="px-2.5 py-0.5 rounded-full bg-blush-field text-dark-pink font-label-sm text-label-sm font-semibold">[[configState]]</span></div></div><div class="grid grid-cols-1 md:grid-cols-12 gap-3"><div class="md:col-span-5 flex flex-col gap-1.5"><label for="setup-token" class="font-label-sm text-label-sm text-body-text font-medium">Payment token &amp; network</label><div class="rounded-xl bg-surface shadow-sm"><select id="setup-token" name="token" required aria-label="Payment token" class="w-full rounded-xl bg-surface px-3.5 py-3 text-ink text-body-sm"><option value="">Select payment token</option></select></div></div><div class="md:col-span-7 flex flex-col gap-1.5"><label for="setup-recipient" class="font-label-sm text-label-sm text-body-text font-medium">Approved Receiving Wallet Address</label><div class="rounded-xl bg-surface shadow-sm"><input id="setup-recipient" name="setup-recipient" required pattern="0x[0-9a-fA-F]{40}" placeholder="0x…" value="" class="w-full rounded-xl bg-surface px-3.5 py-3 text-ink text-body-sm font-mono"></div></div></div></div><div class="p-4 rounded-xl bg-blush-field/60 flex items-start gap-3"><span class="material-symbols-outlined text-dark-pink text-[20px] flex-shrink-0 mt-0.5">security_update_good</span><div class="flex flex-col gap-0.5"><span class="font-label-md text-label-md font-semibold text-dark-pink">Anti-BEC Enforcement &amp; Updates</span><p class="font-body-sm text-body-sm text-body-text leading-relaxed">Invoices referencing an unlisted destination address fail verification, helping detect altered payment details. This milestone displays the configured destination. Editing an active configuration is not exposed here.</p></div></div></div>
+<div class="bg-surface rounded-2xl p-7 shadow-sm flex flex-col gap-4"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-muted-text text-[20px]">policy</span><h3 class="font-headline-sm text-headline-sm text-ink">How verification protects your counterparty</h3></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1"><div class="p-4 rounded-xl bg-surface-secondary/70 flex gap-3.5"><div class="w-7 h-7 rounded-full bg-ink text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold flex-shrink-0">1</div><div class="flex flex-col gap-1"><span class="font-label-md text-label-md font-semibold text-ink">Document commitment</span><p class="font-body-sm text-body-sm text-muted-text leading-relaxed">Checks whether the received PDF matches its published document fingerprint</p></div></div><div class="p-4 rounded-xl bg-surface-secondary/70 flex gap-3.5"><div class="w-7 h-7 rounded-full bg-ink text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold flex-shrink-0">2</div><div class="flex flex-col gap-1"><span class="font-label-md text-label-md font-semibold text-ink">Approved configuration matching</span><p class="font-body-sm text-body-sm text-muted-text leading-relaxed">Receiving address verification: counterparty checks that the requested receiving address matches the currently approved configuration recorded on ENS.</p></div></div></div></div>
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 pb-6">
+<button class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-surface hover:bg-hover text-muted-text hover:text-ink font-label-md text-label-md font-semibold shadow-sm transition-colors flex items-center justify-center gap-2" type="button" data-action="identity">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to identity
+          </button>
+<button class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-dark-pink hover:bg-secondary text-on-primary font-label-md text-label-md font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5" type="submit">
+            Review &amp; finish configuration
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</section>
+<aside class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-surface rounded-2xl p-6 shadow-sm flex flex-col gap-5"><div class="flex items-center justify-between pb-3"><span class="font-label-sm text-label-sm uppercase tracking-wider text-muted-text font-semibold">Current Configuration</span><span class="px-2.5 py-1 rounded-full bg-blush-field text-dark-pink font-label-sm text-label-sm font-semibold">Parameters to review</span></div><div class="flex flex-col gap-4"><div class="flex flex-col gap-1 pb-3 border-b border-surface-container-high"><span class="font-label-sm text-label-sm text-muted-text">Root Domain</span><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-ink font-bold">[[org]]</span><span class="inline-flex items-center gap-1 text-success font-label-sm text-label-sm font-semibold"><span class="material-symbols-outlined text-[14px]">check_circle</span>[[permissionLabel]]</span></div></div><div class="flex flex-col gap-1 pb-3 border-b border-surface-container-high"><span class="font-label-sm text-label-sm text-muted-text">Authorized Signer</span><span class="font-label-md text-label-md text-ink font-mono font-semibold truncate">[[issuer]]</span><span class="font-label-sm text-label-sm text-muted-text">Authority comes from the configured signer address</span></div><div class="flex flex-col gap-1 pb-3 border-b border-surface-container-high"><span class="font-label-sm text-label-sm text-body-text">Receiving Route</span><span class="font-label-md text-label-md text-ink font-semibold">[[symbol]] · [[network]]</span><span class="font-label-sm text-label-sm text-body-text font-mono truncate">[[recipient]]</span></div><div class="flex flex-col gap-1"><span class="font-label-sm text-label-sm text-body-text">Update Policy</span><div class="flex items-center justify-between"><span class="font-label-md text-label-md text-ink font-semibold text-[14px]">Configuration updates are not exposed in this milestone</span><span class="material-symbols-outlined text-primary-blue text-[18px]">verified</span></div></div></div></div>
+<div class="bg-surface rounded-2xl p-6 shadow-sm flex flex-col gap-3">
+<div class="flex items-center gap-2 text-primary-blue">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+<span class="font-headline-sm text-headline-sm text-ink">Already configured?</span>
+</div>
+<p class="font-body-sm text-body-sm text-muted-text leading-relaxed">
+            If this organization's authority roster is already up to date, you can jump directly to issuing invoices without updating onchain pointers.
+          </p>
+<div class="pt-2">
+<button class="w-full py-2.5 px-4 rounded-xl bg-hover hover:bg-surface-secondary text-primary-blue font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1.5" type="button" data-action="workspace" data-needs-ready="">
+              Go to workspace
+              <span class="material-symbols-outlined text-[16px]">trending_flat</span>
+</button>
+</div>
+</div>
+<div class="bg-ink rounded-2xl p-6 text-on-primary shadow-md flex flex-col gap-4 relative overflow-hidden">
+<div class="absolute -right-6 -bottom-6 w-32 h-32 bg-primary-blue/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-pale-blue-field text-[20px]">verified</span>
+<span class="font-label-sm text-label-sm tracking-wider uppercase text-pale-blue-field font-bold">
+              Cryptographic Separation
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-surface-container-high leading-relaxed">ENSv2 Authority Separation: Invoice signers are authorized to cryptographically sign billing records without possessing administrative ownership over your organization domain root.</p>
+<div class="pt-2 flex items-center justify-between text-muted-text"><span class="font-label-sm text-label-sm text-pale-blue-field">Powered by ENSv2</span><span class="font-label-sm text-label-sm font-semibold text-surface">Enterprise Standard</span></div>
+</div>
+</aside>
+</main>
+</div>
+</div></main>
+
+</form>

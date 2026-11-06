@@ -1,0 +1,2 @@
+export const money=value=>{const [whole,fraction='']=String(value).split('.');return new Intl.NumberFormat('en-GB').format(BigInt(whole))+'.'+fraction.slice(0,6).replace(/0+$/,'').padEnd(2,'0');};
+export const readableDate=value=>{const d=new Date(`${value}T00:00:00Z`);return Number.isFinite(d.valueOf())?new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(d):'Date unavailable';};
