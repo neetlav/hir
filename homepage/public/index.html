@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HIR · History · Integrity · Responsibility</title>
+<meta name="description" content="An ENSv2-powered evidence layer that makes records, decisions, and actions independently verifiable.">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/homepage.css">
+</head>
+<body class="min-h-screen flex flex-col selection:bg-hir-pink/15 selection:text-hir-navy">
+<a href="#main" class="skip">Skip to content</a>
+
+<header class="w-full bg-white border-b border-hir-border z-50 transition-all">
+<div class="max-w-[1200px] mx-auto px-6 lg:px-8 h-[104px] flex items-center justify-between">
+
+<a class="flex flex-col items-start justify-center group decoration-none" href="#top">
+<span class="hir-wordmark-text">HIR</span>
+<span class="text-[12px] tracking-[0.02em] font-medium text-hir-muted mt-0.5 group-hover:text-hir-navy transition-colors">History · Integrity · Responsibility</span>
+</a>
+
+<nav aria-label="Main navigation" class="hidden md:flex items-center space-x-1 lg:space-x-2">
+<a class="px-4 py-2 text-[15px] font-bold text-hir-pink border-b-2 border-hir-pink transition-all" href="/" aria-current="page">
+          Home
+        </a>
+<a class="px-4 py-2 text-[15px] font-semibold text-hir-body hover:text-hir-navy hover:bg-slate-50 rounded-lg transition-all" href="https://hir-invoice.neetlav.workers.dev/">
+          Invoices
+        </a>
+<a class="px-4 py-2 text-[15px] font-semibold text-hir-body hover:text-hir-navy hover:bg-slate-50 rounded-lg transition-all" href="https://hir-agents.neetlav.workers.dev/">
+          AI Agents
+        </a>
+<a class="px-4 py-2 text-[15px] font-semibold text-hir-body hover:text-hir-navy hover:bg-slate-50 rounded-lg transition-all" href="#how-it-works">
+          How It Works
+        </a>
+</nav>
+
+<details class="mobile-navigation md:hidden"><summary aria-label="Open navigation"><span class="material-symbols-outlined" aria-hidden="true">menu</span></summary><nav aria-label="Mobile navigation"><a href="/" aria-current="page">Home</a><a href="https://hir-invoice.neetlav.workers.dev/">Invoices</a><a href="https://hir-agents.neetlav.workers.dev/">AI Agents</a><a href="#how-it-works">How It Works</a></nav></details>
+</div>
+</header>
+<main id="main" tabindex="-1">
+
+<section class="relative py-10 md:py-12 overflow-hidden border-b border-hir-borderSubtle" id="top">
+
+<div class="absolute -top-36 left-1/2 -translate-x-1/2 w-[1000px] h-[450px] bg-gradient-to-b from-hir-paleBlue/40 via-hir-lavender/25 to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="max-w-[1200px] mx-auto px-6 lg:px-8">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+
+<div class="lg:col-span-7 flex flex-col items-start text-left"><h1 class="text-[34px] sm:text-[42px] lg:text-[50px] font-extrabold text-hir-navy tracking-[-0.03em] leading-[1.1] mb-5">
+  Know what was authorized.<br class="hidden sm:inline"/>
+<span class="headline-gradient">Verify what happened.</span>
+</h1>
+<p class="text-[16px] sm:text-[17px] text-hir-body leading-[1.6] max-w-[540px] mb-7 font-normal">
+  An ENSv2-powered evidence layer that makes records, decisions, and actions independently verifiable.
+</p>
+<div class="flex items-center gap-4 w-full sm:w-auto">
+<a class="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-hir-pink hover:bg-[#9E145F] text-white font-bold text-[15px] shadow-sm hover:shadow-md transition-all active:scale-[0.98]" href="#applications">
+<span>Explore Use Cases</span>
+<span aria-hidden="true" class="material-symbols-outlined text-[18px]">arrow_downward</span>
+</a>
+</div></div>
+
+<div class="lg:col-span-5 relative w-full flex items-center justify-center"><div class="relative w-full max-w-[420px] aspect-[4/3.4] flex items-center justify-center">
+
+<div class="absolute inset-0 bg-gradient-to-tr from-hir-paleBlue/60 via-hir-lavender/40 to-hir-blush/40 rounded-3xl blur-lg pointer-events-none"></div>
+
+<div class="absolute top-0 right-3 z-30">
+<span class="text-[12px] font-medium text-hir-muted bg-white/90 border border-hir-border px-2.5 py-0.5 rounded-md shadow-xs">Illustrative model</span>
+</div>
+
+<div class="absolute top-5 left-4 right-14 p-4 rounded-xl bg-white border border-hir-blue/30 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-hir-paleBlue flex items-center justify-center text-hir-blue">
+<span aria-hidden="true" class="material-symbols-outlined text-[16px]">corporate_fare</span>
+</div>
+<div>
+<span class="text-[12px] font-bold text-hir-blue uppercase tracking-wider block">Authority</span>
+<span class="text-[13px] font-semibold text-hir-navy font-mono">organization.eth</span>
+</div>
+</div>
+<span class="text-[12px] text-hir-muted font-medium">Published key</span>
+</div>
+</div>
+
+<div class="absolute top-[72px] right-20 z-10">
+<div class="w-0.5 h-7 bg-gradient-to-b from-hir-blue to-hir-magenta"></div>
+</div>
+
+<div class="absolute top-24 left-10 right-8 p-4 rounded-xl bg-white border border-hir-magenta/30 shadow-md z-20">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-hir-blush flex items-center justify-center text-hir-magenta">
+<span aria-hidden="true" class="material-symbols-outlined text-[16px]">draw</span>
+</div>
+<div>
+<span class="text-[12px] font-bold text-hir-magenta uppercase tracking-wider block">Signed record</span>
+<span class="text-[13px] font-semibold text-hir-navy">Authorized Statement</span>
+</div>
+</div>
+<span class="text-[12px] font-mono text-hir-muted">sig: 0x8f…94</span>
+</div>
+<p class="text-[12px] text-hir-muted pl-9.5">Bound to declared organizational authority</p>
+</div>
+
+<div class="absolute bottom-[72px] left-20 z-20">
+<div class="w-0.5 h-7 bg-gradient-to-b from-hir-magenta to-hir-pink"></div>
+</div>
+
+<div class="absolute bottom-3 left-4 right-12 p-4 rounded-xl bg-white border border-hir-pink/30 shadow-lg z-30"><div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-hir-pink text-white flex items-center justify-center shadow-xs">
+<span aria-hidden="true" class="material-symbols-outlined text-[16px]">task_alt</span>
+</div>
+<div>
+<span class="text-[12px] font-bold text-hir-pink uppercase tracking-wider block">Verifiable evidence</span>
+<span class="text-[14px] font-bold text-hir-navy">Cryptographic Proof</span>
+</div>
+</div>
+</div>
+<p class="text-[13px] text-hir-body leading-tight pl-9.5">Verify with the necessary evidence</p></div>
+</div></div>
+</div>
+</div>
+</section>
+
+<section class="py-12 md:py-14 bg-white border-b border-hir-borderSubtle" id="applications">
+<div class="max-w-[1200px] mx-auto px-6 lg:px-8">
+
+<div class="max-w-[700px] mb-7 text-left"><h2 class="text-[28px] sm:text-[34px] font-extrabold text-hir-navy tracking-tight leading-tight mb-2">
+  One evidence layer. Different applications.
+</h2></div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+<div class="group flex flex-col justify-between rounded-2xl bg-hir-bg border border-hir-border hover:border-hir-blue/40 shadow-xs hover:shadow-md transition-all duration-300 p-6">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-[14px] font-bold text-hir-blue tracking-wide">HIR Invoices</span>
+</div>
+<h3 class="text-[22px] font-bold text-hir-navy tracking-tight mb-2.5 group-hover:text-hir-blue transition-colors">
+      Invoice Authenticity
+    </h3>
+<p class="text-[16px] text-hir-body leading-relaxed mb-6">Verify who issued an invoice, whether its payment instructions were authorized, and whether the document has been altered.</p>
+
+<div class="w-full h-[250px] rounded-xl bg-white border border-hir-border p-3.5 mb-6 shadow-xs flex flex-col justify-between">
+
+<div class="bg-hir-bg border border-hir-borderSubtle rounded-lg p-2.5">
+<div class="flex items-center justify-between pb-1.5 border-b border-hir-border">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-hir-blue"></span>
+<span class="text-[12px] font-bold text-hir-navy tracking-wider">INVOICE</span>
+</div>
+<span class="font-mono text-[12px] text-hir-muted font-medium">Illustrative example</span>
+</div>
+<div class="pt-1.5 space-y-1.5">
+<div class="flex items-center justify-between text-[12px]">
+<div class="h-2 bg-slate-200 rounded w-24"></div>
+<div class="h-2 bg-slate-200 rounded w-10"></div>
+</div>
+<div class="flex items-center justify-between text-[12px]">
+<div class="h-2 bg-slate-200/70 rounded w-16"></div>
+<div class="h-2 bg-slate-200/70 rounded w-8"></div>
+</div>
+</div>
+</div>
+
+<div class="space-y-1.5">
+<div class="flex items-center justify-between bg-hir-paleBlue/50 border border-hir-blue/20 rounded-lg px-2.5 py-1.5">
+<div class="flex items-center gap-2">
+<span aria-hidden="true" class="material-symbols-outlined text-hir-blue text-[15px]">corporate_fare</span>
+<span class="text-[12px] font-bold text-hir-navy font-mono">supplier.eth</span>
+</div>
+<span class="text-[12px] font-semibold text-hir-blue">Authorized</span>
+</div>
+<div class="px-2.5 py-1 bg-slate-50 border border-hir-border rounded-lg flex items-center justify-between text-[12px]">
+<span class="text-[12px] text-hir-muted">Fingerprint</span>
+<span class="font-mono text-hir-navy font-semibold text-[12px]">0x7a89…3f12</span>
+</div>
+</div>
+
+<div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-50/80 border border-emerald-200 text-[12px]">
+<div class="flex items-center gap-1.5">
+<span aria-hidden="true" class="material-symbols-outlined text-emerald-700 text-[15px]">check_circle</span>
+<span class="font-semibold text-emerald-900 text-[12px]">Example result</span>
+</div>
+<span class="text-[12px] font-medium text-emerald-700">Matches recorded state</span>
+</div>
+</div>
+</div>
+<div class="pt-1">
+<a class="inline-flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl bg-white hover:bg-hir-paleBlue border border-hir-blue/40 text-hir-blue font-bold text-[15px] shadow-xs transition-all" href="https://hir-invoice.neetlav.workers.dev/">
+<span>Explore Invoices</span>
+<span aria-hidden="true" class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+
+<div class="group flex flex-col justify-between rounded-2xl bg-hir-bg border border-hir-border hover:border-hir-pink/40 shadow-xs hover:shadow-md transition-all duration-300 p-6">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="text-[14px] font-bold text-hir-pink tracking-wide">HIR Agents</span>
+</div>
+<h3 class="text-[22px] font-bold text-hir-navy tracking-tight mb-2.5 group-hover:text-hir-pink transition-colors">
+      AI Agent Authority &amp; Evidence
+    </h3>
+<p class="text-[16px] text-hir-body leading-relaxed mb-6">Let autonomous agents verify published permissions before interacting, and preserve evidence of their decisions and actions.</p>
+
+<div class="w-full h-[250px] rounded-xl bg-white border border-hir-border p-3.5 mb-6 shadow-xs flex flex-col justify-between">
+<div class="flex items-center justify-between pb-2 border-b border-hir-borderSubtle">
+<div class="flex items-center gap-2 text-xs">
+<span class="px-2 py-0.5 rounded bg-hir-paleBlue text-hir-blue font-semibold text-[12px]">Requester</span>
+<span aria-hidden="true" class="material-symbols-outlined text-hir-muted text-[14px]">arrow_forward</span>
+<span class="px-2 py-0.5 rounded bg-hir-blush text-hir-pink font-semibold text-[12px]">Receiver</span>
+</div>
+<span class="text-[12px] font-medium text-hir-muted bg-slate-100 px-2 py-0.5 rounded">
+  Illustrative example
+</span>
+</div>
+<div class="space-y-2 py-1">
+<div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-hir-border text-xs">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-hir-blue/20 text-hir-blue flex items-center justify-center text-[12px] font-bold">1</span>
+<span class="font-medium text-hir-navy text-[13px]">ENS policy assessment</span>
+</div>
+<span class="text-[12px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Within authority</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-hir-border text-xs">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-hir-magenta/20 text-hir-magenta flex items-center justify-center text-[12px] font-bold">2</span>
+<span class="font-medium text-hir-navy text-[13px]">Receiver decision</span>
+</div>
+<span class="text-[12px] font-medium text-hir-navy bg-slate-100 px-2 py-0.5 rounded">Accepted</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-hir-border text-xs">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-hir-pink/20 text-hir-pink flex items-center justify-center text-[12px] font-bold">3</span>
+<span class="font-medium text-hir-navy text-[13px]">Evidence recorded</span>
+</div>
+<span class="text-[12px] font-medium text-hir-pink bg-hir-blush px-2 py-0.5 rounded">Signed evidence</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-1">
+<a class="inline-flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl bg-white hover:bg-hir-blush border border-hir-pink/40 text-hir-pink font-bold text-[15px] shadow-xs transition-all" href="https://hir-agents.neetlav.workers.dev/">
+<span>Explore Agents</span>
+<span aria-hidden="true" class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div></div>
+</div>
+</section>
+
+<section class="py-12 md:py-14 bg-hir-bg border-b border-hir-borderSubtle" id="how-it-works">
+<div class="max-w-[1200px] mx-auto px-6 lg:px-8">
+
+<div class="max-w-[700px] mb-7 text-left"><h2 class="text-[28px] sm:text-[34px] font-extrabold text-hir-navy tracking-tight leading-tight mb-2">
+  Authority. Evidence. Verification.
+</h2></div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-white rounded-xl p-6 border border-hir-border shadow-xs hover:shadow-sm transition-shadow relative">
+<div class="flex items-center justify-between mb-4">
+<span class="text-[13px] font-mono font-bold text-hir-blue bg-hir-paleBlue px-2.5 py-1 rounded-md">01</span>
+<div class="w-9 h-9 rounded-lg bg-hir-paleBlue flex items-center justify-center text-hir-blue">
+<span aria-hidden="true" class="material-symbols-outlined text-[19px]">badge</span>
+</div>
+</div>
+<h3 class="text-[18px] font-bold text-hir-navy mb-2">
+    Publish Authority
+  </h3>
+<p class="text-[16px] text-hir-body leading-relaxed">Organizations establish permissions and authorized identities through ENSv2.</p>
+</div>
+
+<div class="bg-white rounded-xl p-6 border border-hir-border shadow-xs hover:shadow-sm transition-shadow relative">
+<div class="flex items-center justify-between mb-4">
+<span class="text-[13px] font-mono font-bold text-hir-magenta bg-hir-lavender px-2.5 py-1 rounded-md">02</span>
+<div class="w-9 h-9 rounded-lg bg-hir-lavender flex items-center justify-center text-hir-magenta">
+<span aria-hidden="true" class="material-symbols-outlined text-[19px]">history_toggle_off</span>
+</div>
+</div>
+<h3 class="text-[18px] font-bold text-hir-navy mb-2">
+    Record Evidence
+  </h3>
+<p class="text-[16px] text-hir-body leading-relaxed">Signed records and action evidence are linked to verifiable onchain commitments.</p>
+</div>
+
+<div class="bg-white rounded-xl p-6 border border-hir-border shadow-xs hover:shadow-sm transition-shadow relative">
+<div class="flex items-center justify-between mb-4">
+<span class="text-[13px] font-mono font-bold text-hir-pink bg-hir-blush px-2.5 py-1 rounded-md">03</span>
+<div class="w-9 h-9 rounded-lg bg-hir-blush flex items-center justify-center text-hir-pink">
+<span aria-hidden="true" class="material-symbols-outlined text-[19px]">fact_check</span>
+</div>
+</div>
+<h3 class="text-[18px] font-bold text-hir-navy mb-2">
+    Verify Independently
+  </h3>
+<p class="text-[16px] text-hir-body leading-relaxed">Anyone with the necessary evidence can verify its integrity and authorization without relying solely on HIR's application.</p>
+</div></div>
+</div>
+</section>
+
+<section class="py-10 md:py-12 bg-white border-b border-hir-border">
+<div class="max-w-[1200px] mx-auto px-6 lg:px-8">
+<div class="rounded-2xl bg-gradient-to-r from-hir-paleBlue/40 via-white to-hir-blush/30 border border-hir-border p-8 md:p-10 text-center flex flex-col items-center">
+<h2 class="text-[26px] sm:text-[32px] font-extrabold text-hir-navy tracking-tight mb-6">
+        Build on verifiable evidence.
+      </h2>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+<a class="w-full sm:w-auto px-7 py-3 rounded-xl bg-hir-pink hover:bg-[#9E145F] text-white font-bold text-[15px] shadow-sm hover:shadow-md transition-all text-center" href="https://hir-invoice.neetlav.workers.dev/">Explore Invoices
+        </a>
+<a class="w-full sm:w-auto px-7 py-3 rounded-xl bg-hir-navy hover:bg-[#1E3558] text-white font-bold text-[15px] shadow-sm hover:shadow-md transition-all text-center" href="https://hir-agents.neetlav.workers.dev/">Explore Agents
+        </a>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<footer class="site-footer"><div class="footer-inner">
+  <div class="footer-main"><div class="footer-description"><a href="/" class="brand-gradient footer-wordmark" aria-label="HIR home">HIR</a><p>An ENSv2-powered evidence layer for verifiable records, actions, and authority.</p></div>
+    <nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="https://hir-invoice.neetlav.workers.dev/verify">Verify invoice</a><a href="https://hir-invoice.neetlav.workers.dev/#for-organizations">For organizations</a><a href="https://hir-invoice.neetlav.workers.dev/docs/invoices">Documentation</a></nav>
+  </div>
+  <div class="footer-bottom"><p>© 2026 Lavneet Bansal</p></div>
+</div></footer>
+</body>
+</html>

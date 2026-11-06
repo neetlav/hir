@@ -1,0 +1,10 @@
+import {cp,mkdir,readFile,readdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';import path from 'node:path';import {createRequire} from 'node:module';import {execFileSync} from 'node:child_process';
+const directory=fileURLToPath(new URL('.',import.meta.url)),output=path.join(directory,'dist');
+const require=createRequire(import.meta.url);
+await mkdir(output,{recursive:true});await cp(path.join(directory,'public'),output,{recursive:true});
+execFileSync(process.execPath,[require.resolve('tailwindcss/lib/cli.js'),'-c',path.join(directory,'tailwind.config.cjs'),'-i',path.join(directory,'styles.css'),'-o',path.join(output,'homepage.css'),'--minify'],{stdio:'inherit'});
+const html=await readFile(path.join(output,'index.html'),'utf8');
+if(/<script\b|https:\/\/(?:fonts\.|cdn\.tailwind)/.test(html))throw Error('Homepage must use local static assets without runtime scripts');
+if(!html.includes('© 2026 Lavneet Bansal'))throw Error('Existing footer must be retained');
+console.log('Built standalone HIR homepage in homepage/dist ('+(await readdir(output)).length+' top-level assets).');
