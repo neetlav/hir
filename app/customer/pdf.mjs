@@ -10,7 +10,8 @@ export const PDF_RENDERER='PDFKit 0.20.2 - direct Node PDF, embedded Inter';
 const colors={ink:'#191919',petrol:'#164E57',pink:'#E72A96',muted:'#595755',line:'#E1E1E0',warm:'#FAF9F7',pale:'#FEEAF0',berry:'#9E1B68'};
 const tooLong=()=>Error('This invoice is too long for the supported one-page PDF. Shorten the customer reference or payment terms; nothing has been issued.');
 let fontPromise;
-function fonts(){
+function fonts(fontBytes){
+ if(fontBytes)return Promise.resolve([400,500,600].map((weight,i)=>({weight,bytes:Buffer.from(fontBytes[i]),coverage:openFont(Buffer.from(fontBytes[i]))})));
  if(!fontPromise){const pending=Promise.all([400,500,600].map(async weight=>{const bytes=await readFile(new URL(`../../node_modules/@fontsource/inter/files/inter-latin-${weight}-normal.woff`,import.meta.url));return {weight,bytes,coverage:openFont(bytes)};}));fontPromise=pending;pending.catch(()=>{if(fontPromise===pending)fontPromise=null;});}
  return fontPromise;
 }
@@ -87,11 +88,11 @@ function layout(doc,data,compact){
  return {ops,bottom:y,limit:doc.page.height-margin,compact};
 }
 
-export async function createPDF(data){
- const loaded=await fonts();
+export async function createPDF(data,{fontBytes,origin}={}){
+ const loaded=await fonts(fontBytes);
  for(const value of Object.values(data))if(typeof value==='string')supported(value,loaded);
  if(!/^0x[0-9a-f]{64}$/i.test(data.recordId??''))throw Error('Invoice record identity is required before PDF creation.');
- const url=new URL(data.link);if(url.protocol!=='http:'||url.hostname!=='127.0.0.1')throw Error('PDF verification links must stay on the local app.');
+ const url=new URL(data.link);if(origin?url.origin!==origin||url.protocol!=='https:':url.protocol!=='http:'||url.hostname!=='127.0.0.1')throw Error('PDF verification links must stay on the configured app origin.');
  const qr=QRCode.create(data.link,{errorCorrectionLevel:'M'});
  const doc=new PDFDocument({autoFirstPage:false,size:'A4',margins:{top:0,bottom:0,left:0,right:0},bufferPages:true,font:null,info:{Title:`Invoice ${data.invoiceNumber} - version ${data.revision}`,Author:data.supplier,Creator:'HIR direct invoice renderer',Producer:'PDFKit 0.20.2'}});
  const chunks=[];const done=new Promise((resolve,reject)=>{doc.on('data',chunk=>chunks.push(chunk));doc.once('end',()=>resolve(Buffer.concat(chunks)));doc.once('error',reject);});done.catch(()=>{});

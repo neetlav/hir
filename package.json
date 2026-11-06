@@ -12,21 +12,27 @@
     "test": "node --test test/invoice-record.test.mjs test/customer-invoice.test.mjs test/invoice-access.test.mjs test/customer-pdf.test.mjs test/sepolia-pdf-network.test.mjs test/customer-http.test.mjs",
     "app:start": "node app/customer/server.mjs",
     "app:build:ui": "tailwindcss -c app/customer/tailwind.config.cjs -i app/customer/stitch-input.css -o app/customer/public/stitch.css --minify",
-    "test:browser": "node test/customer-browser.mjs"
+    "test:browser": "node test/customer-browser.mjs",
+    "build": "npm run app:build:ui && node scripts/build-worker-assets.mjs",
+    "deploy": "wrangler deploy",
+    "worker:check": "wrangler deploy --dry-run --outdir .local/worker-build",
+    "test:worker": "node --test test/worker-runtime.test.mjs"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "5.6.1",
-    "solc": "0.8.38",
-    "viem": "2.57.13",
     "@fontsource/inter": "5.2.8",
+    "@openzeppelin/contracts": "5.6.1",
     "fontkit": "2.0.4",
     "pdfkit": "0.20.2",
-    "qrcode": "1.5.4"
+    "qrcode": "1.5.4",
+    "solc": "0.8.38",
+    "viem": "2.57.13"
   },
   "devDependencies": {
     "hardhat": "3.21.1",
+    "miniflare": "5.20261104.0-beta",
     "playwright": "1.62.1",
-    "tailwindcss": "3.4.17"
+    "tailwindcss": "3.4.17",
+    "wrangler": "4.158.0"
   },
   "overrides": {
     "tmp": "0.2.7"
