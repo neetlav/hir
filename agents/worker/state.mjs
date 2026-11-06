@@ -1,4 +1,5 @@
 import {DurableObject} from 'cloudflare:workers';
+import {chainDiagnostic} from './diagnostics.mjs';
 import {createPublicClient,http} from 'viem';import {privateKeyToAccount} from 'viem/accounts';import OpenAI from 'openai';
 import configuration from '../config/sepolia.json';import {evidenceBuild} from '../build/protocol.mjs';import html from '../public/index.html';
 import {Repository,JobStore} from '../app/storage.mjs';import {Contexts} from '../app/contexts.mjs';import {Setup} from '../app/setup.mjs';import {Workspace} from '../app/service.mjs';import {WorkspaceWallet} from '../app/wallet.mjs';import {WorkspaceAccess,WalletSessions,AccessError} from '../app/access.mjs';import {runExchange} from '../app/runtime.mjs';import {verify} from '../src/verifier.mjs';import * as p from '../src/protocol.mjs';
@@ -21,13 +22,13 @@ export class AgentsState extends DurableObject {
   const live=this.workspace.live;if(live?.active){const failed={...live,active:false,status:'indeterminate',error:'An earlier request was interrupted. Retained progress is available; it is never automatically restarted.'};this.workspace.live=failed;const key='run:'+live.actor.toLowerCase()+':'+live.runId,old=this.db.get(key);if(old)this.db.put(key,{...old,status:'indeterminate',error:failed.error});}
  }
  persist(){for(const s of this.access.sessions.sessions.values())this.access.sessions.save(s);}
- async fetch(request){let session;try{
+ async fetch(request){let session,operation;try{
   const origin=originFor(request,this.env),url=new URL(request.url),route=url.pathname,sessions=this.access.sessions;session=sessions.fromCookie(request.headers.get('cookie')||'');
   if(['/','/setup','/policy','/interaction','/history'].includes(route)){
    if(request.method!=='GET')throw new AccessError('Read-only page route',405);if(route==='/')return new Response(null,{status:303,headers:{Location:'/setup'}});
    session??=sessions.create();this.persist();return new Response(html.replace('__TOKEN__',session.csrf),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Set-Cookie':`hir_agents_session=${session.id}; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800`}});
   }
-  if(!route.startsWith('/api/'))throw new AccessError('Not found',404);const name=route.slice(5);
+  if(!route.startsWith('/api/'))throw new AccessError('Not found',404);const name=route.slice(5);operation=name;
   if(name==='stop')throw new AccessError('No public process-control API',404);
   if(!session)throw new AccessError('Open Agents and verify your wallet',401);
   if(request.headers.get('x-hir-agents-token')!==session.csrf)throw new AccessError('Reload this page to refresh its browser session',409);
@@ -40,5 +41,5 @@ export class AgentsState extends DurableObject {
   if(name==='public/verify'&&request.method==='POST'){const b=await body(request);p.need(b.trust&&b.bundle&&b.sealSignature,'Provide evidence and independently expected trust');return response(await verify({client:this.receiver,config:b.trust,build:evidenceBuild,bundle:b.bundle,sealSignature:b.sealSignature,anchor:b.anchor}));}
   if(routes.get(name)!==request.method)throw new AccessError('Unknown endpoint',404);
   const value=await this.access.execute(session,name,request.method==='POST'?await body(request):{},url.searchParams);this.persist();return response(value);
- }catch(error){this.persist();return response({error:error instanceof AccessError||error.constructor===Error?error.message:'The chain or service check could not complete. No successful action is assumed.'},error instanceof AccessError?error.status:400);}}
+ }catch(error){this.persist();let diagnostic;if(!(error instanceof AccessError)){const event=chainDiagnostic(error,operation??'page');console.error('Agents chain check unavailable',JSON.stringify(event));diagnostic={id:event.id,operation:event.operation,category:event.category};}return response({error:error instanceof AccessError||error.constructor===Error?error.message:'The chain or service check could not complete. No successful action is assumed.',...(diagnostic?{diagnostic}:{})},error instanceof AccessError?error.status:400);}}
 }

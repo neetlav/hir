@@ -41,3 +41,13 @@ test('logout during a failed authority read cannot restore the signed session',a
  const sessions=new WalletSessions({origin:'https://hir-agents.test.workers.dev',operator:async()=>({allowed:true})}),s=sessions.create(),challenge=sessions.challenge(s,{account:account.address,org:'example.eth',chainId:11155111});await sessions.verify(s,{signature:await account.signMessage({message:challenge.message})});
  sessions.operator=()=>new Promise((resolve,reject)=>{fail=reject;});const pending=sessions.require(s);sessions.logout(s);fail(missing());await assert.rejects(()=>pending,e=>e.status===401);assert.equal(sessions.public(s).authenticated,false);
 });
+import {chainDiagnostic} from '../worker/diagnostics.mjs';
+test('chain diagnostics distinguish quota, RPC, gas and revert failures without retaining raw payloads',()=>{
+ for(const [message,category]of [['Too many subrequests','subrequest-limit'],['block not found','rpc-block-unavailable'],['request timed out','rpc-timeout'],['too many requests','rpc-rate-limit'],['insufficient funds for gas','insufficient-gas-balance'],['execution reverted','contract-reverted']]){
+  const secret='private-marker-do-not-retain',cause=Object.assign(Error(message+' https://rpc.invalid/'+secret),{name:'RpcRequestError',code:-32001,data:{privateKey:secret}}),error=Object.assign(Error('HTTP request failed '+secret),{name:'ContractFunctionExecutionError',functionName:'getParent',cause,requestBody:secret});const diagnostic=chainDiagnostic(error,'setup/registration-prepare','reference');assert.equal(diagnostic.category,category);assert.equal(diagnostic.operation,'setup/registration-prepare');assert.equal(diagnostic.causes[0].functionName,'getParent');assert.equal(diagnostic.causes[1].code,-32001);assert.doesNotMatch(JSON.stringify(diagnostic),new RegExp(secret+'|https://|requestBody|privateKey'));
+ }
+ const estimate=chainDiagnostic(Object.assign(Error('unavailable'),{name:'EstimateGasExecutionError'}),'wallet/intent','ref');assert.equal(estimate.category,'gas-estimate-failed');
+});
+test('diagnostics bound error chains and retain only numeric codes and statuses',()=>{
+ const error=Object.assign(Error('raw'),{name:'https://rpc.invalid/private',code:'secret',status:'secret',functionName:'private(data)'});error.cause=error;const diagnostic=chainDiagnostic(error,'wallet/intent','reference');assert.deepEqual(diagnostic.causes,[{name:'Error'}]);assert.equal(diagnostic.category,'chain-service-unavailable');
+});
