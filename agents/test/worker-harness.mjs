@@ -1,0 +1,6 @@
+// Test-only platform injection and inspection. Production configuration never references this entry.
+import worker from '../worker/index.mjs';import {AgentsState as BaseState,platform,response} from '../worker/state.mjs';import {modelFetch,mockModel} from './model-fixture.mjs';
+export class AgentsState extends BaseState {
+ async fetch(request){const p=new URL(request.url).pathname;if(p==='/__test/storage')return response({metadata:this.db.sql.exec('SELECT key,value FROM agents_metadata').toArray(),jobs:this.db.sql.exec('SELECT key,value FROM agents_jobs').toArray()});if(p==='/__test/expire-run'){this.workspace.live={...this.workspace.live,deadline:0};return response({expired:true});}if(p.startsWith('/__test/model/')){mockModel.mode=p.split('/').at(-1);if(mockModel.mode!=='hold'){mockModel.release?.();delete mockModel.release;}return response({mode:mockModel.mode,calls:mockModel.calls});}if(p==='/__test/model')return response(mockModel);return super.fetch(request);}
+}
+export default {async fetch(request,env){platform.configuration=JSON.parse(env.TEST_PLATFORM);platform.modelFetch=modelFetch;const p=new URL(request.url).pathname;if(p.startsWith('/__test/'))return env.AGENTS_STATE.get(env.AGENTS_STATE.idFromName('agents-state-v1')).fetch(request);return worker.fetch(request,env);}};
