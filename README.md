@@ -17,12 +17,3 @@ npm ci --ignore-scripts --no-audit --no-fund
 ```
 
 This command validates the package snapshot; it does not start HIR. Application run and validation commands will be documented when their implementations are published.
-
-
-## Validation and scope
-
-The existing local invoice implementation has undergone Sepolia acceptance and isolated security testing. Those implementation files and supporting evidence are not part of this foundation snapshot, so this repository does not yet provide a reproducible application validation package. Later stages will include the relevant sanitized source, checks, dependencies, and documented limits.
-
-ENS name acquisition is a prerequisite to organization onboarding. Correction creation and configuration editing are not exposed in the current local invoice UI; cancellation is not implemented in its active ledger. Local testnet validation is not a production or mainnet deployment claim. Public-chain/RPC evidence can be unavailable and must not be treated as a verification pass.
-
-Runtime credentials, wallet key material, local state, customer documents, internal reports, and generated artifacts are excluded from this initial publication.
