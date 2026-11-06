@@ -20,6 +20,7 @@ export async function inspectOrganization({client,org,label='requester',account,
  p.need(p.eq(record.resolver,resolver),'Agent routes through an unexpected resolver');
  const recordId=await read(resolver,a.PermissionedResolverImpl.abi,'getRecordId',[names.agentNode]),codeHashes={};
  for(const [key,address] of Object.entries({universal,registry,resolver})){const code=await client.getCode({address,...at});p.need(code&&code!=='0x','ENS dependency code unavailable');codeHashes[key]=p.hash(code);}
+ p.need(p.eq((await client.getBlock(at)).hash,block.hash),'Organization authority checkpoint changed during inspection');
  return{org,label,name:names.agent,account,chainId,universal,registry,resolver,controller:state.latestOwner,ownershipResource:state.resource,organizationExpiry:state.expiry,blockNumber:block.number,blockHash:block.hash,timestamp:block.timestamp,recordId,raw:record.raw,codeHashes,operator:p.eq(state.latestOwner,account)||rootData||keyData,canPublish:rootData||keyData};
 }
 

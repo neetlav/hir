@@ -1,5 +1,6 @@
 import {DurableObject} from 'cloudflare:workers';
 import {chainDiagnostic} from './diagnostics.mjs';
+import {withAuthorityFallback} from '../app/authority-reads.mjs';
 import {createPublicClient,http} from 'viem';import {privateKeyToAccount} from 'viem/accounts';import OpenAI from 'openai';
 import configuration from '../config/sepolia.json';import {evidenceBuild} from '../build/protocol.mjs';import html from '../public/index.html';
 import {Repository,JobStore} from '../app/storage.mjs';import {Contexts} from '../app/contexts.mjs';import {Setup} from '../app/setup.mjs';import {Workspace} from '../app/service.mjs';import {WorkspaceWallet} from '../app/wallet.mjs';import {WorkspaceAccess,WalletSessions,AccessError} from '../app/access.mjs';import {runExchange} from '../app/runtime.mjs';import {verify} from '../src/verifier.mjs';import * as p from '../src/protocol.mjs';
@@ -12,7 +13,8 @@ async function body(request){const reader=request.body?.getReader();if(!reader)r
 const routes=new Map([['workspace','GET'],['identities','GET'],['evidence','GET'],['trust','GET'],...['setup/check','setup/prepare','setup/registration-prepare','context/select','policy/check','wallet/intent','wallet/dispatched','wallet/result','wallet/confirm','wallet/retry','run','verify'].map(x=>[x,'POST'])]);
 export class AgentsState extends DurableObject {
  constructor(ctx,env){super(ctx,env);this.env=env;this.db=new Repository(ctx.storage);const config=platform.configuration,client=url=>createPublicClient({transport:http(url,{timeout:12000,retryCount:0}),cacheTime:0,ccipRead:false});
-  this.receiver=client(env.HIR_AGENTS_RECEIVER_RPC||'https://ethereum-sepolia-rpc.publicnode.com');this.requester=client(env.HIR_AGENTS_REQUESTER_RPC||'https://ethereum-sepolia-rpc.publicnode.com');
+  const defaultRPC='https://ethereum-sepolia-rpc.publicnode.com',recoverableClient=(url,backup)=>{const primary=url||defaultRPC,fallback=backup||(primary.replace(/\/$/,'')===defaultRPC?'https://sepolia.gateway.tenderly.co':null),source=client(primary);return fallback?withAuthorityFallback(source,client(fallback)):source;};
+  this.receiver=recoverableClient(env.HIR_AGENTS_RECEIVER_RPC,env.HIR_AGENTS_RECEIVER_FALLBACK_RPC);this.requester=recoverableClient(env.HIR_AGENTS_REQUESTER_RPC,env.HIR_AGENTS_REQUESTER_FALLBACK_RPC);
   const accounts=()=>{try{p.need(/^0x[0-9a-fA-F]{64}$/.test(env.HIR_AGENTS_REQUESTER_KEY??'')&&/^0x[0-9a-fA-F]{64}$/.test(env.HIR_AGENTS_RECEIVER_KEY??''),'keys');return{requester:privateKeyToAccount(env.HIR_AGENTS_REQUESTER_KEY),receiver:privateKeyToAccount(env.HIR_AGENTS_RECEIVER_KEY)};}catch{throw Error('Dedicated signer secret bindings are unavailable or invalid');}};
   const identities=async()=>{const a=accounts();p.need(!p.eq(a.requester.address,a.receiver.address),'Requester and receiver must be distinct dedicated identities');return{requester:a.requester.address,receiver:a.receiver.address,evidence:config.evidence,runtimeCodeHash:config.runtimeCodeHash};};
   const contexts=new Contexts(this.db,new JobStore(this.db)),setup=new Setup({contexts,client:this.receiver,platform:config,identities}),wallet=new WorkspaceWallet({contexts,setup,client:this.receiver,chainId:config.chainId,db:this.db,build:evidenceBuild});
