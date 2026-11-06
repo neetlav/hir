@@ -1,0 +1,40 @@
+# Dependencies and generated build/test output
+node_modules/
+artifacts/
+cache/
+coverage/
+dist/
+build/
+out/
+.cache/
+
+# Local runtime data, credentials and machine configuration
+.local/
+.env
+.env.*
+secrets/
+credentials/
+keystore/
+*.key
+*.pem
+*.p12
+*.pfx
+*.dpapi
+*.keystore
+
+# Private documents and internal/generated evidence
+reports/
+deployments/
+output/
+tmp/
+*.pdf
+*.log
+*.sqlite
+*.sqlite-*
+*.db
+
+# Editor and operating-system metadata
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

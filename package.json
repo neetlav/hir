@@ -1,0 +1,10 @@
+{
+  "name": "hir-ensv2-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "HIR — History · Integrity · Responsibility. ENSv2-powered verifiable evidence.",
+  "engines": {
+    "node": ">=24"
+  }
+}
