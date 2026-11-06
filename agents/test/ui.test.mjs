@@ -52,6 +52,11 @@ test('empty activity has no scripted messages; actual adverse behavior stays rec
  const model=base();let html=interactionView(model,null,'');assert.match(html,/No activity yet/);assert.match(html,/No result yet/);assert.doesNotMatch(html,/Request signed and submitted|15\.75|Actual message/);
  model.jobs=[saved()];model.jobs[0].state.activity.push({type:'tool-result',actor:'Agent 2',tool:'perform_analysis',at:'2026-11-06T10:02:04.000Z'});html=interactionView(model,null,'');assert.match(html,/Actual message &lt;unsafe&gt;/);assert.match(html,/Exceeds published permissions/);assert.match(html,/Accepted/);assert.match(html,/Completed/);assert.match(html,/Signed record saved/);assert.match(html,/data-action="anchor:request"/);assert.doesNotMatch(html,/Awaiting outcome/);assert.doesNotMatch(html,/Evidence verified/);
 });
+test('interrupted latest run retains errors without borrowing an older signed result',()=>{
+ const model=base();model.jobs=[saved()];model.live={active:false,status:'indeterminate',error:'Bounded run stopped',events:[{actor:'Agent 1',type:'api-error',data:{status:429,code:'rate_limit_exceeded'},publicText:'Provider call failed.'},{actor:'Runtime',type:'run-failed',publicText:'Actual progress retained.'}]};
+ const latest=interactionView(model,null,'');assert.match(latest,/Model request failed/);assert.match(latest,/429/);assert.match(latest,/rate_limit_exceeded/);assert.match(latest,/Actual progress retained/);assert.match(latest,/No result yet/);assert.doesNotMatch(latest,/Actual message|15\.75/);
+ const older=interactionView(model,'request','');assert.match(older,/Actual message/);assert.match(older,/15\.75/);assert.doesNotMatch(older,/Interaction interrupted|Model request failed|rate_limit_exceeded/);
+});
 test('history starts unverified and shows receiver-reported non-execution without claiming proof',()=>{
  const model=base();model.jobs=[saved()];model.jobs[0].state.decision.accepted=false;model.jobs[0].state.outcome.status=0;model.jobs[0].state.output=null;model.jobs[0].state.violation=false;
  const html=historyView(model,{filters:{}});assert.match(html,/Receiver reports not run/);assert.match(html,/does not prove hidden non-execution/);assert.match(html,/Not checked/);assert.doesNotMatch(html,/Evidence verified|Local cryptographic store|no.sign.in/);

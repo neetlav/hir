@@ -116,6 +116,14 @@ assert.equal((await owner.call('workspace')).body.pendingSetup,null);
   assert.equal((await stranger.login(f.other,org)).status,200);const check=await stranger.call('setup/check',{org,label:'requester',account:f.other.address});assert.equal(check.status,200,p.json(check));const other=check.body.reuse.contextId;assert.equal((await stranger.call('context/select',{contextId:other})).status,200);assert.equal((await stranger.call('workspace')).body.jobs.length,0);assert.equal(Object.keys((await stranger.call('workspace')).body.wallet.operations).length,0);
   assert.equal((await stranger.call('context/select',{contextId:context})).status,403);assert.equal((await stranger.call('evidence?contextId='+context+'&id='+first.requestId)).status,409);assert.equal((await owner.call('context/select',{contextId:other})).status,403);assert.equal((await owner.call('setup/check',{org,label:'requester'})).status,403);
  });
+ await t.test('authority failure during a model run retains its diagnostic and progress without replay',async()=>{
+  await mf.dispatchFetch(origin+'/__test/model/hold');const input={contextId:context,task:'Request basic analysis.',runId:randomUUID()},pending=owner.call('run',input);
+  for(let i=0;i<50;i++){const live=(await owner.call('workspace')).body.live;if(live?.runId===input.runId&&live.events?.some(e=>e.type==='api-request'))break;await new Promise(resolve=>setTimeout(resolve,20));}
+  let failed;try{rpcOffline=true;await mf.dispatchFetch(origin+'/__test/model/normal');failed=await pending;}finally{rpcOffline=false;}
+  assert.equal(failed.status,400,p.json(failed));assert.equal(failed.body.diagnostic.operation,'run');assert.equal(failed.body.diagnostic.category,'rpc-block-unavailable');
+  const live=(await owner.call('workspace')).body.live;assert.equal(live.status,'indeterminate');assert.ok(live.events.some(e=>e.type==='api-request'));assert.ok(live.events.some(e=>e.type==='run-failed'));
+  const before=(await(await mf.dispatchFetch(origin+'/__test/model')).json()).calls;assert.equal((await owner.call('run',input)).status,400);assert.equal((await(await mf.dispatchFetch(origin+'/__test/model')).json()).calls,before);
+ });
  await t.test('awaited model request, durable duplicate claim and deadline interruption never replay',async()=>{
   await mf.dispatchFetch(origin+'/__test/model/hold');const id=randomUUID(),input={contextId:context,task:'Request basic analysis.',runId:id};let finished=false;const pending=owner.call('run',input).then(x=>{finished=true;return x;});
   let live;for(let i=0;i<50;i++){live=(await owner.call('workspace')).body.live;if(live?.runId===id&&live.events?.some(e=>e.type==='api-request'))break;await new Promise(resolve=>setTimeout(resolve,20));}
