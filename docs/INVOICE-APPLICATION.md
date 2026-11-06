@@ -2,55 +2,36 @@
 
 HIR — History · Integrity · Responsibility
 
-This application runs as a local Node server and uses the published Sepolia ledger and native ENSv2 resolver. It is not an online hosted service. No relayer is used.
+The invoice application has a Cloudflare Workers deployment target: website assets, API and persistent metadata run online from a workers.dev URL. No running laptop, tunnel, external Node host, R2 bucket or custom domain is required. Deployment is a separate manual step; repository validation is not a claim that a public instance is live. Follow [Cloudflare setup](CLOUDFLARE-WORKERS.md).
 
-## Run
+## Configure an organization
 
-Use Node.js 24 or later. From the repository root:
+Bring an active ENSv2-compatible .eth identity on the configured Sepolia registry. HIR does not register names. A name on a different registry/resolver implementation is not sufficient. The resolver must support the native full-name data/permission methods used by the validated ledger.
 
-```sh
-npm ci --ignore-scripts --no-audit --no-fund
-npm run compile
-npm run app:start
-```
+Load the identity and connect a wallet with its actual resolver configuration/writer-grant permissions. A short personal-sign message proves private workspace access; it changes no blockchain state. Organization selection is browser-session-specific. Existing policy and writer permission are reused without a setup transaction.
 
-Open http://127.0.0.1:4321. Use the literal loopback address rather than localhost; host and origin checks deliberately restrict access. Set HIR_CUSTOMER_PORT to select another local port. Set HIR_INVOICE_RPC to a trusted Ethereum Sepolia HTTP RPC if the default public endpoint is unavailable. Runtime state defaults to .local/hir-sepolia-website; HIR_CUSTOMER_STATE can select a separate directory strictly inside .local. Never share that directory: it contains private documents, pending operations and business state. Back it up securely and preserve it when restarting. The server never seeds an organization or copies another user's invoices into a new workspace.
+For initial setup, choose a separate ordinary invoice signer, supported test payment token and approved receiving wallet. The billing signer must not control resolver policy, record linking or upgrades. Review and approve one batched setup transaction for the missing policy/writer configuration. Editing active configuration is not exposed.
 
-The prebuilt stylesheet is included. To rebuild it after source changes, run npm run app:build:ui. Fonts and icons are local assets; their notices are in app/customer/public/fonts/licenses.
+## Issue and retain an invoice
 
-## Organization setup
+Connect the configured signer and verify workspace access. Create the invoice, preview its exact final PDF and download it. Keep this original file: the Worker does not store PDFs or provide later server downloads. Only invoice metadata, document fingerprints, protected statements, signatures and publication/recovery state are persisted.
 
-Bring an active ENSv2-compatible .eth identity on the configured Sepolia registry. A name on a different ENS registry or resolver implementation is not sufficient. HIR does not register names. The resolver must support native full-name wildcard resolution, keyed data, record IDs, multicall and the permission model used by this ledger. Network deployments may change; a failed registry, runtime or permission check must be investigated rather than bypassed.
+Review the final supplier, amount, token/network and receiving wallet. Sign one EIP-712 Invoice statement, then submit one direct wallet transaction. Connection, network-switch and private-access authentication prompts are additional. Publication uses Sepolia ETH for gas; it does not transfer the invoiced token. The ledger atomically accepts the evidence and creates the invoice-specific ENS pointer.
 
-Load the organization and connect a wallet with its actual resolver configuration and writer-grant permissions. HIR requests a short personal-sign message to prove private workspace access. This message changes no blockchain state. An existing valid invoice policy and ledger writer grant are reused without a setup transaction.
+If you refresh or interrupt the flow, reconnect the original wallet, reopen the saved draft and upload that exact downloaded PDF. Hash checks must match before signing or publication. HIR never regenerates a replacement and pretends its bytes are identical. If the original is lost, do not proceed with that draft. An unsubmitted draft may be left intact while you prepare and review a new invoice; uncertain/submitted transactions must first be reconciled.
 
-For first configuration, choose a separate ordinary invoice-signing wallet, a supported test payment token, and an approved receiving wallet. The billing signer must not control resolver policy, record linking or upgrades. Review the configuration and approve one batched wallet transaction for policy and any missing writer grant. HIR checks actual permissions; ownership alone is not a substitute for them. Editing an already active configuration is not exposed here.
+Pending transaction intent and known hashes survive Worker recreation/redeployment. Confirmation is checked in bounded requests; no background process or relayer is required. Recheck the existing transaction or record its known hash when a wallet response is uncertain. Only explicit wallet rejection permits a new submission attempt.
 
-## Issue an invoice
+## Verify a received invoice
 
-Connect the configured signer, verify wallet access, and open the workspace. Create an invoice, preview the exact final PDF, and review its supplier, amount, network, token and receiving wallet. Downloaded and previewed bytes are frozen; changing those bytes blocks signing and publication.
+Recipients need no wallet or private workspace. Enter Supplier ENS Name, copy Invoice Authenticity Code from the PDF, and upload the received PDF. Independently confirm that the supplier ENS identity belongs to the business you expect. An invoice/link must not decide whom you trust.
 
-Check the review box, sign one EIP-712 Invoice statement, and submit one direct wallet transaction. Connection, network-switch and private-access authentication prompts are additional to the one invoice signature and one publication transaction. HIR never signs or pays gas for you. No token payment is made by publication; Sepolia ETH is needed for gas. The application uses conservative testnet gas/fee caps and reports an error if those caps cannot cover publication.
+Public ENS resolution discovers the shared-ledger pointer. Canonical transaction/receipt/log checks, historical authorization, receiving policy and exact document hash establish evidence independently of HIR workspace data. Uploaded recipient PDFs are transient and never persisted. Results distinguish original supplier authorization, PDF integrity, receiving-address approval and current revision. HTTPS links/QR codes use the explicitly configured public origin.
 
-The transaction atomically accepts evidence and creates the invoice-specific ENS pointer. Wait for confirmation. If a wallet response is uncertain, recheck the existing publication or record its known transaction hash. Do not create another submission until the original is reconciled. Only an explicit wallet rejection permits a retry. Pending operations and frozen PDFs survive server restarts; reconnect the original wallet to recover them.
+Current pointer or ownership changes cannot rewrite accepted historical evidence. The verifier requires independently trusted chain/ledger/runtime configuration and available historical RPC data. Missing evidence is not a pass. These are RPC observations, not a light-client/finality proof or payment approval.
 
-## Recipient verification
+## Current limits
 
-Recipients need no wallet or HIR workspace. Open /verify, enter the Supplier ENS Name, copy the Invoice Authenticity Code from the PDF, and upload the received PDF. Independently confirm the supplier ENS identity through a trusted business contact; an invoice or its link must not decide whom you trust.
+No correction-creation UI, cancellation, general configuration editor, contract-wallet issuers, email delivery, custody or Agents. Existing ledger revision history remains verifiable. A single SQLite Durable Object coordinates this initial application; this is not a high-throughput multi-region invoice backend. Private metadata is Cloudflare account data and must be protected accordingly. PDFs remain with their issuer/recipient.
 
-The code is the full invoice ENS name. Public ENS resolution discovers the ledger pointer; canonical transaction/receipt/log checks, the signature, historical policy and document hash establish the evidence independently of HIR's private records. The PDF link points to the local instance that generated it; recipients can instead enter the supplier and code in their own instance with the same independently trusted deployment configuration.
-
-Results distinguish original supplier authorization, exact PDF integrity, receiving-address approval and current revision. An authentic earlier revision can remain authentic after a correction. Current ownership or pointer changes cannot rewrite accepted historical evidence. Verification relies on available historical RPC data and independently trusted ledger/runtime configuration; unavailable evidence is not a pass. It is not a light-client/finality proof and does not approve a payment or establish uninterrupted ENS ownership.
-
-## Scope and limitations
-
-The website can create and publish first invoices, reuse or create initial organization configuration, and verify current or prior accepted revisions. The ledger supports chained revisions, but correction creation is not exposed in this website. Cancellation, a general configuration editor, email delivery and contract-wallet issuers are not supported. Custody and Agents are outside this application. Private sessions expire and account/network/provider changes revoke browser access; reconnect and sign a fresh access message when needed. Local files are not an encrypted multi-tenant hosted storage service.
-
-## Tests
-
-```sh
-npm test
-npm run test:browser
-```
-
-Tests use disposable local EVM accounts/state or explicit HTTP/browser stubs, not live wallets or Sepolia writes. Browser checks require an installed Playwright Chromium browser; alternatively set HIR_BROWSER_CHANNEL=chrome to use installed Chrome. Browser sandboxing stays enabled. The contract/customer tests exercise actual native ENS bytecodes, exact PDF generation, atomic publication, independent recipient reads and rejection cases. Browser session checks exercise account, network, provider and session changes with isolated signing accounts. They do not claim to be live extension-wallet acceptance tests.
+The preserved Node reference server (`npm run app:start`) and its local state are not used by the deployed Worker. Local files are never imported or migrated into cloud state automatically.

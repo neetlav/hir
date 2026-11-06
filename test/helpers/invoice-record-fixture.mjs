@@ -1,8 +1,9 @@
 import hre from 'hardhat';import {readFile} from 'node:fs/promises';import {createPublicClient,createWalletClient,custom,defineChain,encodeFunctionData,zeroAddress} from 'viem';import {generatePrivateKey,privateKeyToAccount} from 'viem/accounts';import {compile as compileInvoice} from '../../scripts/invoice-record/compile.mjs';import * as p from '../../scripts/invoice-record/protocol.mjs';
-export async function invoiceFixture(){
+export async function invoiceFixture({chainId=31337}={}){
+ if(![31337,11155111].includes(chainId))throw Error('Unsupported isolated test chain');
  const cfg=hre.config.networks.hardhatMainnet;if(cfg?.type!=='edr-simulated'||cfg.forking?.enabled)throw Error('Isolated EVM only');
- const connection=await hre.network.connect({network:'hardhatMainnet',override:{throwOnTransactionFailures:false}}),provider=connection.provider,transport=custom({request:r=>provider.request(r)},{retryCount:0});
- const chain=defineChain({id:31337,name:'Isolated invoice tests',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:{default:{http:['http://unused.local']}}});const client=createPublicClient({chain,transport,cacheTime:0,ccipRead:false}),wallet=createWalletClient({chain,transport});if(await client.getChainId()!==31337)throw Error('Refuse test keys outside local EVM');
+ const connection=await hre.network.connect({network:'hardhatMainnet',override:{throwOnTransactionFailures:false,chainId}}),provider=connection.provider,transport=custom({request:r=>provider.request(r)},{retryCount:0});
+ const chain=defineChain({id:chainId,name:'Isolated invoice tests',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:{default:{http:['http://unused.local']}}});const client=createPublicClient({chain,transport,cacheTime:0,ccipRead:false}),wallet=createWalletClient({chain,transport});if(await client.getChainId()!==chainId)throw Error('Refuse test keys outside local EVM');
  const accounts=Array.from({length:5},()=>privateKeyToAccount(generatePrivateKey()));for(const a of accounts)await provider.request({method:'hardhat_setBalance',params:[a.address,'0x3635c9adc5dea00000']});
  const [admin,issuer,relayer,other]=accounts;const artifacts=Object.fromEntries(await Promise.all(['LabelStore','RootRegistry','ETHRegistry','PermissionedResolverImpl','UniversalResolverV2','VerifiableFactory'].map(async n=>[n,JSON.parse(await readFile('vendor/ens-native/'+n+'.json'))])));
  const deploy=async(a,args=[])=>{const hash=await wallet.deployContract({abi:a.abi,bytecode:a.bytecode,args,account:admin});const r=await client.waitForTransactionReceipt({hash});if(r.status!=='success')throw Error('deploy reverted');return{address:r.contractAddress,abi:a.abi};};
@@ -15,9 +16,9 @@ export async function invoiceFixture(){
  // The organization has NO child registry. Invoices use native wildcard resolution.
  await send(eth,'register',['invoice-only',admin.address,zeroAddress,resolver.address,roles,expiry]);const artifact=await compileInvoice(),ledger=await deploy(artifact,[universal.address,eth.address]);
  const org='invoice-only.eth',s=await read(eth,'getState',[BigInt(p.textHash('invoice-only'))]);
- const policy={version:1,namespace:p.namespaceNode(org),ledger:ledger.address,chainId:31337n,controller:admin.address,ownershipResource:s.resource,resolver:resolver.address,generation:p.textHash('invoice-fixture-generation'),issuer:issuer.address,paymentChainId:31337n,token:other.address,recipient:admin.address};
+ const policy={version:1,namespace:p.namespaceNode(org),ledger:ledger.address,chainId:BigInt(chainId),controller:admin.address,ownershipResource:s.resource,resolver:resolver.address,generation:p.textHash('invoice-fixture-generation'),issuer:issuer.address,paymentChainId:BigInt(chainId),token:other.address,recipient:admin.address};
  const configure=async(policy_,who=admin)=>send(resolver,'setData',[p.wire(p.namespace(org)),p.CONFIG_KEY,p.encodePolicy(policy_)],who);await configure(policy);
  const bytes=Buffer.from('final invoice PDF test bytes');const invoice=(overrides={})=>({scope:p.scope(policy),invoiceId:p.textHash('INV-001'),revision:1,previousDigest:'0x'+'00'.repeat(32),pdfHash:p.hash(bytes),detailsHash:p.textHash('protected invoice details'),amount:1000000n,paymentChainId:policy.paymentChainId,token:policy.token,recipient:policy.recipient,policyHash:p.hash(p.encodePolicy(policy)),deadline:expiry,...overrides});
- const sign=(v,who=issuer,chainId=31337,contract=ledger.address)=>who.signTypedData(p.typedInvoice(contract,chainId,v));
+ const sign=(v,who=issuer,domainChain=chainId,contract=ledger.address)=>who.signTypedData(p.typedInvoice(contract,domainChain,v));
  return {connection,provider,client,wallet,admin,issuer,relayer,other,root,eth,resolver,universal,ledger,artifact,org,policy,bytes,invoice,configure,sign,send,read};
 }
