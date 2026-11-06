@@ -33,6 +33,7 @@ export class AgentsState extends DurableObject {
   if(request.headers.get('x-hir-agents-token')!==session.csrf)throw new AccessError('Reload this page to refresh its browser session',409);
   if(request.method==='POST'&&(request.headers.get('Origin')!==origin||!request.headers.get('Content-Type')?.startsWith('application/json')))throw new AccessError('Same-origin JSON request required');
   if(name==='auth/session'&&request.method==='GET')return response(sessions.public(session));
+  if(name==='auth/organization'&&request.method==='POST')return response(await this.workspace.setup.organization(await body(request)));
   if(name==='auth/logout'&&request.method==='POST'){sessions.logout(session);return response({authenticated:false});}
   if(name==='auth/challenge'&&request.method==='POST')return response(sessions.challenge(session,await body(request)));
   if(name==='auth/verify'&&request.method==='POST'){const pending=sessions.verify(session,await body(request));this.persist();const result=await pending;this.persist();return response(result);}
