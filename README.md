@@ -18,18 +18,6 @@ npm ci --ignore-scripts --no-audit --no-fund
 
 This command validates the package snapshot; it does not start HIR. Application run and validation commands will be documented when their implementations are published.
 
-## Staged publication
-
-Development and local Sepolia validation began before this public repository. The following stages publish that existing work for review; commit dates represent actual publication work, not the original development dates.
-
-1. Project foundation: this initial publication to main.
-2. Invoice contracts and independent verification: pull request.
-3. Invoice website, including wallet authentication and private workspace access: pull request.
-4. Agents authority and evidence: pull request.
-5. Agents runtime, interface, and access checks: pull request.
-6. Sanitized documentation and submission materials: pull request.
-
-Only stage 1 is included now. Subsequent work will use feature branches and pull requests rather than direct pushes to main.
 
 ## Validation and scope
 
