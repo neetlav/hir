@@ -1,4 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';import vm from 'node:vm';
 import {accessView,setupView,policyView,interactionView,historyView,walletProgress} from '../public/views.mjs';
 import {SAMPLE} from '../src/analysis.mjs';
 import {walletOperation} from '../public/wallet-state.mjs';
@@ -9,6 +10,19 @@ const base=()=>({profile,contexts:[profile],current:{status:'valid',registration
 const check=()=>({org,label,name,account:wallet,controller:wallet,registration:{status:'registered'},keys:{requester,receiver},canConfigure:true});
 const op=status=>({key:'policy:review',operation:'policy',status,preparedAt:'2026-11-06T10:00:00.000Z',transaction:{from:wallet,to:receiver,data:'0x1234'},gasEstimate:'12345'});
 const saved=()=>({id:'request',state:{envelope:{request:{requestId:'request',mode:1,credits:80,createdAt:1793970000,requester}},assessment:{status:'outside-authority',reason:'80 exceeds 50'},decision:{accepted:true},reason:'Actual receiver choice',outcome:{status:1},output:{count:8,sum:'126',minimum:'9',maximum:'24',mean:{numerator:'126',denominator:'8'}},sealed:{bundleHash:'commitment'},violation:true,activity:[{type:'public-message',actor:'Agent 2',at:'2026-11-06T10:02:03.000Z',publicText:'Actual message <unsafe>'}]}});
+test('a failed next-step read preserves confirmed deployment evidence without inventing current progress',()=>{
+ const hash='0x'+'a'.repeat(64),confirmed={operation:'registration',status:'confirmed',registrationStage:'deploy-agents-registry',registration:{org,label},receipt:{status:'success'},hash},model=base();model.wallet.operations={deployment:confirmed};
+ for(const checked of [{...check(),registration:{status:'namespace-unregistered',nextStageUnavailable:true,message:'The next registration step could not be verified.'}},null]){
+  const html=setupView(model,{org,label,checked,checkError:'The current registration step could not be verified.'});assert.match(html,/1 previously confirmed/);assert.match(html,/Previously confirmed transaction/);assert.ok(html.includes(hash));assert.match(html,/Current state not verified/);assert.doesNotMatch(html,/Not started|data-action="register-name"/);assert.match(html,/data-action="check-setup">Check names again/);assert.match(html,/does not send or repeat a transaction/);assert.equal(confirmed.status,'confirmed');
+ }
+ const unrelated=registrationPanel({status:'unavailable'},{org:'different.eth',label,steps:true,operations:model.wallet.operations});assert.doesNotMatch(unrelated,/previously confirmed|Previously confirmed transaction/);
+});
+test('a failed setup recheck clears a stale next-transaction action and recovery installs the fresh observation',async()=>{
+ const source=await readFile(new URL('../public/workspace.mjs',import.meta.url),'utf8'),line=source.split('\n').find(x=>x.startsWith('async function checkSetup()'));
+ const setup={org,label,checked:{registration:{nextStage:'deploy-agents-registry'}}},context=vm.createContext({setup,account:wallet,api:async()=>{throw Error('isolated outage');}});vm.runInContext(line,context);
+ await assert.rejects(()=>context.checkSetup(),/isolated outage/);assert.equal(setup.checked,null);assert.match(setup.checkError,/Previously confirmed transactions are retained/);
+ const next={registration:{nextStage:'set-agents-parent'}};context.api=async()=>next;assert.equal(await context.checkSetup(),next);assert.equal(setup.checkError,null);
+});
 test('entry has no assumed organization, wallet or access; an observation is not sign-in',()=>{
  const empty=accessView({org:'',account:null});assert.match(empty,/Find organization/);assert.match(empty,/data-action="connect" disabled/);assert.match(empty,/data-action="authenticate" disabled/);assert.doesNotMatch(empty,/Organization found/);
  const found=accessView({org,organization:{org},account:null});assert.match(found,/Organization found/);assert.match(found,/data-action="authenticate" disabled/);assert.doesNotMatch(found,/Organization access checked/);
