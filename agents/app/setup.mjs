@@ -1,8 +1,9 @@
 import {inspectOrganization,preparePolicy} from '../src/policy.mjs';import {lookupPolicy} from '../src/ens.mjs';import {objectHash} from '../src/analysis.mjs';import * as p from '../src/protocol.mjs';
+import {authorityReads} from './authority-reads.mjs';
 export class Setup {
  constructor({contexts,db=contexts.db,client,platform,identities,publicIdentities,guard=()=>{}}){Object.assign(this,{contexts,db,client,platform,publicIdentities:identities??publicIdentities,guard});}
  async identities(){return this.publicIdentities();}
- input(input){return{...input,client:this.client,chainId:this.platform.chainId,universal:this.platform.universal,registry:this.platform.registry};}
+ input(input){return{...input,client:authorityReads(this.client),chainId:this.platform.chainId,universal:this.platform.universal,registry:this.platform.registry};}
  async operator(input){const r=await inspectOrganization(this.input(input));return{...r,allowed:r.operator,role:p.eq(r.account,r.controller)?'organization-owner':r.canPublish?'agents-resolver-delegate':null};}
  async check(input){const c=await inspectOrganization(this.input(input)),keys=await this.identities();let reuse=null;
   if(c.raw!=='0x'){
