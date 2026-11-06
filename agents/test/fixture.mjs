@@ -3,13 +3,15 @@ import {readFile} from 'node:fs/promises';
 import {createPublicClient,createWalletClient,custom,defineChain,encodeFunctionData,zeroAddress} from 'viem';
 import {privateKeyToAccount,generatePrivateKey} from 'viem/accounts';
 import * as p from '../src/protocol.mjs';
-export async function fixture(){
+export async function fixture({chainId=31337}={}){
+ if(![31337,11155111].includes(chainId))throw Error('Unsupported isolated chain');
  if(hre.config.networks.hardhatMainnet?.type!=='edr-simulated'||hre.config.networks.hardhatMainnet?.forking?.enabled)throw Error('Isolated local EVM required');
- const connection=await hre.network.connect({network:'hardhatMainnet',override:{throwOnTransactionFailures:false}}),provider=connection.provider;
- const chain=defineChain({id:31337,name:'Agents isolated tests',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:{default:{http:['http://unused.local']}}});
+ // Keep locally auto-mined deployment blocks behind wall time for live checkpoint rules.
+ const connection=await hre.network.connect({network:'hardhatMainnet',override:{throwOnTransactionFailures:false,chainId,...(chainId===11155111?{initialDate:new Date(Date.now()-60000),initialBaseFeePerGas:1000000}:{})}}),provider=connection.provider;
+ const chain=defineChain({id:chainId,name:'Agents isolated tests',nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},rpcUrls:{default:{http:['http://unused.local']}}});
  const transport=custom({request:r=>provider.request(r)},{retryCount:0}),client=createPublicClient({chain,transport,cacheTime:0,ccipRead:false}),wallet=createWalletClient({chain,transport});
- if(await client.getChainId()!==31337)throw Error('Never use test keys outside local EVM');
- const [admin,requester,receiver,other]=Array.from({length:4},()=>privateKeyToAccount(generatePrivateKey()));
+ if(await client.getChainId()!==chainId)throw Error('Never use test keys outside local EVM');
+ const privateKeys=Array.from({length:4},()=>generatePrivateKey()),[admin,requester,receiver,other]=privateKeys.map(privateKeyToAccount);
  for(const account of [admin,requester,receiver,other])await provider.request({method:'hardhat_setBalance',params:[account.address,'0x3635c9adc5dea00000']});
  const artifacts=Object.fromEntries(await Promise.all(['LabelStore','RootRegistry','ETHRegistry','PermissionedResolverImpl','UniversalResolverV2','VerifiableFactory'].map(async n=>[n,JSON.parse(await readFile(new URL('../../vendor/ens-native/'+n+'.json',import.meta.url)))])));
  const deploy=async(a,args=[])=>{const hash=await wallet.deployContract({abi:a.abi,bytecode:a.bytecode,args,account:admin}),r=await client.waitForTransactionReceipt({hash});if(r.status!=='success')throw Error('Local deploy reverted');return{address:r.contractAddress,abi:a.abi};};
@@ -22,8 +24,8 @@ export async function fixture(){
  const address=await read(factory,'predictProxyAddress',[admin.address,1n]);await send(factory,'deployProxy',[impl.address,1n,init]);const resolver={address,abi:impl.abi};
  await send(registry,'register',['agents-only',admin.address,zeroAddress,resolver.address,roles,expiry]);
  const org='agents-only.eth',n=p.names(org),state=await read(registry,'getState',[BigInt(p.textHash('agents-only'))]);
- const policy={version:1,chainId:31337n,orgNode:n.orgNode,agentNode:n.agentNode,controller:admin.address,ownershipResource:state.resource,resolver:resolver.address,generation:p.textHash('isolated-agents-generation'),requester:requester.address,receiver:receiver.address,action:p.ACTION,priceTable:p.TABLE,validAfter:0n,validUntil:expiry-1n,maxCredits:50};
+ const policy={version:1,chainId:BigInt(chainId),orgNode:n.orgNode,agentNode:n.agentNode,controller:admin.address,ownershipResource:state.resource,resolver:resolver.address,generation:p.textHash('isolated-agents-generation'),requester:requester.address,receiver:receiver.address,action:p.ACTION,priceTable:p.TABLE,validAfter:0n,validUntil:expiry-1n,maxCredits:50};
  const trust={...policy,org,universal:universal.address,registry:registry.address};
  const configure=(value=p.encodePolicy(policy))=>send(resolver,'setData',[p.wire(n.agent),p.KEY,value]);await configure();
- return{connection,provider,client,wallet,admin,requester,receiver,other,registry,resolver,universal,policy,trust,n,deploy,send,read,configure};
+ return{testKeys:{requester:privateKeys[1],receiver:privateKeys[2]},connection,provider,client,wallet,admin,requester,receiver,other,registry,resolver,universal,policy,trust,n,deploy,send,read,configure};
 }

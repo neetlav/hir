@@ -1,55 +1,55 @@
-# HIR Agents authority and evidence foundation
+# HIR Agents
 
-This package provides one native ENSv2 agent policy and an append-only evidence contract for a signed requesting identity and a signed receiving identity. It is a protocol and verification foundation. It does not serve an application, execute an LLM, load API credentials, manage browser sessions, or deploy a Worker or contract.
+Two OpenAI Agents SDK agents exchange signed analysis requests and outcomes under a native ENSv2 policy. The application includes setup, published policy, live interaction and history/evidence screens, plus a separate Cloudflare Worker with SQLite Durable Object storage. After deployment it does not require a running laptop or tunnel.
 
-The fixed action is `hir.analysis`. Basic analysis costs **40 illustrative service credits**, extended analysis costs **80**, and the policy limit is **50 per request**. Credits are neither cryptocurrency nor a payment/budget mechanism. Receiver choice, deterministic policy compliance and the reported execution outcome are separate facts. Authentic acceptance outside authority remains recordable and is flagged by independent verification.
+The fixed action is `hir.analysis`. Basic analysis costs **40 illustrative credits**, extended costs **80**, and authority is capped at **50 per request**. These are service units, not cryptocurrency, payments or an account budget. The dataset is fixed: 12, 18, 9, 24, 15, 21, 10 and 17 minutes.
+
+The requester interprets the task and uses catalogue/submission tools. The receiver independently resolves native ENS authority, explicitly chooses accept/reject, and can invoke deterministic analysis. Its actual decision is recorded separately from compliance. Authentic acceptance outside authority stays signed, flagged and recordable. There is no scripted fallback presented as a live agent decision. Production calls use `gpt-5.4-mini-2026-03-17`, Agents SDK 0.21.0 and OpenAI SDK 7.47.0; tracing and provider storage are disabled. Public messages, tool results and API identifiers are retained, not hidden reasoning.
 
 ## Install and validate
 
 Use Node.js 24 or newer. From the repository root:
 
 ```sh
-# Existing shared verifier imports resolve against the repository's published dependencies.
 npm ci --ignore-scripts --no-audit --no-fund
-# Agents maintains its own pinned compiler/test dependencies and scripts.
 npm --prefix agents ci --ignore-scripts --no-audit --no-fund
 npm --prefix agents run compile
 npm --prefix agents test
+npm --prefix agents run test:worker
+npm --prefix agents run build
+npm --prefix agents run worker:check
 ```
 
-The root invoice package, commands and Worker configuration are unchanged. The Agents compiler generates `agents/build/HirAgentsEvidence.json`; generated builds are ignored. Compiler inputs use canonical LF line endings for reproducibility across Git checkout settings. There is no dependency on local deployment manifests, preloaded evidence, runtime state, model credentials or another application's build output.
+Root dependencies serve the existing shared chain verifier; Agents has its own pinned application/build dependencies. Root application sources, manifests and Worker configuration are unchanged. Builds embed the published ENS ABIs and static assets, with no dependency on private deployment files, local state, generated customer evidence or another application's output. Generated `agents/build`, `agents/dist`, dependencies and local persistence are ignored.
 
-Tests use random ephemeral accounts, disposable directories and an unforked local EVM with the official ENS implementations already pinned in `vendor/ens-native`. They cover native organization/policy bindings and historical checkpoints, delegated publication authority, canonical signatures and tamper/replay rejection, accepted basic analysis, rejected extended analysis, and authentic off-policy acceptance. These deterministic tests are not evidence of actual LLM operation, Sepolia deployment or online availability. No live wallet, paid API or live-chain transaction is needed.
+Foundation tests exercise native authority, historical checkpoints, signatures, replay/execution claims, deterministic results and violations against an unforked local EVM. `test:worker` uses actual workerd/SQLite, the real Agents SDK and synthetic Responses HTTP replies. No real model API, wallet, Sepolia transaction or Cloudflare deployment is exercised by these tests. Test injection, inspection routes and synthetic wallet code are excluded from the production build entry.
 
-## Interfaces
+For interactive browser testing, run `node test/browser-server.mjs` **from `agents`** and visit the printed loopback URL. This disposable fixture provides an explicitly named synthetic wallet, isolated chain and mocked model, and rewrites origin/cookies only in its local proxy. It is not a deployment server. Enter `agents-only.eth`, connect the fixture wallet, verify, check permissions and select the existing policy. Stop it with Ctrl+C. Never supply real keys to the fixture.
 
-- `src/protocol.mjs`: canonical policy ABI, fixed prices/parameters, EIP-712 request/decision/outcome/seal types and digests.
-- `src/policy.mjs`: `inspectOrganization` reads current ownership and resolver roles; `preparePolicy` returns exact bytes and native resolver transaction calldata for an unoccupied agent name. All chain/service/signer/evidence addresses are explicit. Neither function loads a private key, authenticates a human operator, sends a transaction, or overwrites an existing record. Publication must be explicitly approved outside this package and rechecked against current authority.
-- `src/ens.mjs`: direct native Universal Resolver reads and independently pinned historical policy retrieval. No HIR authority endpoint is involved.
-- `src/engine.mjs`: signed request authentication, independent assessment and signed receiver evidence. The caller injects two separate signer accounts, the chain client and a storage adapter. Receiver acceptance is an explicit caller decision; computation is the bounded deterministic function in `analysis.mjs`. The injected storage must implement durable append/load/claim semantics for restart safety. Only a disposable test adapter is included; production storage, authentication and operational endpoints are not provided.
-- `contracts/HirAgentsEvidence.sol`: authenticates linked EOA signatures and one receiver seal, commits their hashes and emits one event per requester/request ID. It does not enforce ENS authority, catalogue prices or the 50-credit cap, and has no payment, ENS administration, owner, upgrade, erase or overwrite operation.
-- `src/verifier.mjs`: verifies signed linkage and sealed bundle bytes, resolves the historical ENS checkpoint independently, recomputes compliance/results and authenticates the canonical event/storage commitment using the repository's shared chain-evidence verifier.
+## Hosted access and persistence
 
-See [protocol and trust requirements](PROTOCOL.md) before preparing or verifying evidence.
+An HttpOnly/Secure/SameSite cookie identifies a browser session; it is not proof of wallet control. A short-lived single-use challenge binds the exact HTTPS origin, wallet, organization and Sepolia chain. Each private operation rechecks current native organization ownership or Agents resolver SET_DATA authority. Context selection belongs to that browser session. Plans, wallet recovery and private evidence are scoped to the authenticated organization and original transaction sender. Account/network/disconnect events clear private UI state. Refresh and direct routes resume only with the matching connected provider/account/network and a valid server session; current roles are still checked.
 
-## Independent verification
+SQLite separates job/evidence records, metadata and expiring sessions. Signed bundles are immutable. Durable run IDs and execution claims are written before provider calls/computation. HTTP requests await the bounded exchange; there is no detached 202 job or dependence on `waitUntil`. Runs have at most nine model calls, four requester/five receiver turns, 1,200 tokens per call, 30-second model/tool timeouts and a 150-second overall deadline. One exchange is active at a time. Interruption, restart or elapsed deadline leaves retained progress marked indeterminate and prevents automatic replay. An interrupted HTTP response is not a success claim.
 
-Choose expected trust independently of a received evidence bundle. Use an archive-capable RPC for that chain:
+Policy publication and evidence anchoring require separate human wallet approval. Exact intents are persisted before dispatch. An ambiguous wallet result requires reconciliation of the existing public hash; it is never automatically resent. Confirmation checks sender, destination, data, nonce, chain, canonical receipt, two confirmations and the actual policy/evidence commitment. An unrelated hash cannot replace the intended transaction.
+
+See [Cloudflare deployment](DEPLOYMENT.md) for the manual Free-plan trial setup and remaining remote checks. Source readiness and local tests do not establish online availability.
+
+## Protocol and independent verification
+
+See [protocol and trust requirements](PROTOCOL.md). The append-only evidence contract authenticates linked requester/receiver signatures and their sealed bundle commitment. It has no payment, ENS administration, policy-cap enforcement, owner, upgrade or delete gate. Initial preparation only returns exact calldata for an unoccupied native name; it does not register domains or overwrite invoice records. Existing matching policies are observed independently without fabricating an original publication transaction.
+
+Choose expected trust independently of a received bundle and use an archive-capable RPC:
 
 ```sh
 npm --prefix agents run verify -- --trust /path/to/expected-trust.json --bundle /path/to/received-evidence.json --rpc https://your-archive-rpc.example
 ```
 
-The trust file supplies `chainId`, normalized `org`, `label`, organization `controller`/`ownershipResource`, `resolver`, `generation`, `requester`, `receiver`, `universal`, `registry`, `codeHashes`, `policyHash`, `evidence` and `runtimeCodeHash`. Pin the native `recordId` after initial publication to detect relinking. The evidence file contains `bundle`, `sealSignature` and, when anchored, `anchor: {transactionHash, logIndex}`. Keep RPC credentials out of public files and shell history.
+The trust file supplies `chainId`, normalized `org`, `label`, `controller`, `ownershipResource`, `resolver`, `generation`, `requester`, `receiver`, `universal`, `registry`, `codeHashes`, `policyHash`, `recordId`, `evidence` and `runtimeCodeHash`. A downloaded evidence file supplies `bundle`, `sealSignature` and, when anchored, `anchor: {transactionHash, logIndex}`. Keep RPC credentials out of public files and command history. The CLI rebuilds the contract and requires its runtime hash to match the selected trust.
 
-The command rebuilds the contract locally and requires the build's runtime hash to match the independently selected trust file. It exits successfully only for `verified` historical evidence with an anchor; failure and unavailable historical RPC data are not an authorization pass. A valid receipt alone does not establish policy compliance.
+The deliberate `POST /api/public/verify` endpoint accepts a complete provided bundle and independently chosen trust; it does not retrieve private stored jobs by ID. It requires a page session/CSRF token but no organization login. Both verifiers distinguish authenticity, historical authority, receiver choice, recomputable output and onchain anchoring. A receipt alone does not establish compliance. Unavailable historical RPC data is not a pass.
 
-## Limits and next integration boundary
+Only normalized second-level ASCII `.eth` organizations, one action/version, two EOA signers and the fixed catalogue are supported. Registration, policy editing/revocation, contract-wallet signatures and payments are outside scope. Signatures authenticate statements and commitments; they do not prove hidden execution/non-execution, complete logging, uninterrupted ownership or light-client finality.
 
-Only normalized second-level ASCII `.eth` organizations, one action, one policy version, two EOA signing identities and the fixed catalogue are supported. Initial preparation rejects an occupied native name. Policy editing/revocation, contract-wallet signatures, registration, payments, LLM execution, UI/access sessions, production persistence and cloud hosting are not included.
-
-Signatures authenticate attributable statements and commitments. They do not prove hidden execution, hidden non-execution, complete logging, uninterrupted ENS ownership or light-client finality. Successful deterministic output can be recomputed; a signed rejection is a receiver statement about non-execution.
-
-Any future operational service must authenticate its caller, enforce current organization/action permissions, isolate selected contexts and protect model/signing credentials. This foundation exposes no unauthenticated operational HTTP service. A hosted adapter must preserve durable replay/execution claims and the independent receiver/compliance distinction. A future Worker integration will need bundled ENS ABIs and platform storage/client adapters; the current filesystem loaders and CLI are Node reference utilities.
-
-The contract retains its MIT SPDX notice. OpenZeppelin is installed as a pinned npm dependency with its upstream license. ENS artifact provenance, checksums and license notices remain in `vendor/ens-native`; they are reused rather than duplicated.
+The contract retains its MIT SPDX notice. ENS provenance/licenses remain in `vendor/ens-native`; pinned npm dependencies retain upstream licenses. Font licenses accompany the bundled assets.
