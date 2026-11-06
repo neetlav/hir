@@ -1,3 +1,4 @@
+import {requestReads} from '../app/customer/operation.mjs';
 import manifest from '../config/registered-ledger-deployment.json';
 import {ledgerDeploymentStatus} from '../app/customer/ledger-deployment.mjs';
 import {DurableObject} from 'cloudflare:workers';
@@ -10,6 +11,7 @@ export const json=value=>JSON.stringify(value,(_,v)=>typeof v==='bigint'?v.toStr
 async function readBody(request){const reader=request.body?.getReader();if(!reader)return{};const chunks=[];let size=0;for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>8*1024*1024){await reader.cancel();throw Object.assign(Error('Choose a PDF up to 5 MB'),{status:413});}chunks.push(Buffer.from(value));}return JSON.parse(Buffer.concat(chunks).toString('utf8'));}
 export function originFor(request,env){let origin;try{const u=new URL(env.HIR_PUBLIC_ORIGIN);if(u.protocol!=='https:'||u.origin!==env.HIR_PUBLIC_ORIGIN||!/^hir-invoice\.[a-z0-9-]+\.workers\.dev$/.test(u.hostname))throw Error();origin=u.origin;}catch{throw Object.assign(Error('Set HIR_PUBLIC_ORIGIN to this Worker’s exact HTTPS workers.dev origin.'),{status:503});}if(new URL(request.url).origin!==origin||request.headers.has('Origin')&&request.headers.get('Origin')!==origin)throw Object.assign(Error('Use the configured HIR origin.'),{status:403});return origin;}
 export function response(value,status=200,headers={}){return new Response(json(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers}});}
+function readFailure(error){const chain=[];for(let cause=error;cause&&!chain.includes(cause);cause=cause.cause)chain.push(cause);if(chain.some(c=>/too many subrequests/i.test(c.message||'')))return{code:'rpcReadLimitExceeded',error:'This blockchain read exceeded the request limit. Your setup and pending transactions are preserved.'};if(chain.some(c=>['HttpRequestError','TimeoutError','SocketClosedError'].includes(c.name)))return{code:'rpcReadUnavailable',error:'The blockchain connection is temporarily unavailable. Please try again. Your setup and pending transactions are preserved.'};}
 function repository(ctx){
  const sql=ctx.storage.sql;sql.exec('CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)');sql.exec('CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, expires INTEGER NOT NULL, value TEXT NOT NULL)');
  const state={version:1,drafts:[],setups:[]},cache=new Map();for(const row of sql.exec('SELECT key,value FROM metadata')){cache.set(row.key,row.value);if(row.key.startsWith('draft:'))state.drafts.push(JSON.parse(row.value));else if(row.key.startsWith('setup:'))state.setups.push(JSON.parse(row.value));}
@@ -23,7 +25,8 @@ export class InvoiceState extends DurableObject{
  }
  async createService(){const service=await createInvoiceService({baseURL:this.env.HIR_PUBLIC_ORIGIN,client:this.client,platform,repository:this.repo,renderPDF:summary=>createPDF(summary,{fontBytes,origin:this.env.HIR_PUBLIC_ORIGIN})});this.serviceReady=service;return service;}
  persistSessions(){const now=Date.now();this.ctx.storage.transactionSync(()=>{this.repo.sql.exec('DELETE FROM sessions WHERE expires <= ?',now);for(const s of this.access.sessions.values())if(s.expires>now)this.repo.sql.exec('INSERT INTO sessions(id,expires,value) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET expires=excluded.expires,value=excluded.value',s.id,s.expires,json(s));});}
- async fetch(request){let s;try{
+ async fetch(request){return requestReads.run(new Map(),()=>this.#fetchRequest(request));}
+ async #fetchRequest(request){let s;try{
   const origin=originFor(request,this.env),url=new URL(request.url),route=url.pathname.slice(5);s=this.access.cookie(request.headers.get('cookie')||'');
   if(request.method==='GET'&&route==='session'){const current=s||this.access.create();current.origin=origin;this.persistSessions();return response({token:current.csrf,chainId:platform.chainId,ledger:platform.ledger,cancellationSupported:false,documentStorage:'none',auth:this.access.public(current)},200,{'Set-Cookie':`hir_invoice_session=${current.id}; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800`});}
   if(request.method==='GET'){
@@ -46,5 +49,5 @@ export class InvoiceState extends DurableObject{
   if(route==='verify')return response(await verifyReceived({client:this.client,platform,name:b.name,expectedOrg:b.expectedOrg,bytes:b.pdfBase64?Buffer.from(b.pdfBase64,'base64'):undefined}));
   if(['registration','registration/hash','registration/recheck','registration/rejected','setup','setup/dispatch','setup/receipt','setup/status','setup/rejected','draft','signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(route)){const result=await this.access.call(s,route,b);this.persistSessions();return response(result);}
   return response({error:'Not found'},404);
- }catch(error){this.persistSessions();return response({error:error.shortMessage||error.message},error.status||400);}}
+ }catch(error){this.persistSessions();const unavailable=readFailure(error);return response(unavailable||{error:error.shortMessage||error.message},unavailable?503:error.status||400);}}
 }
