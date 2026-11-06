@@ -33,7 +33,7 @@ export class WalletSessions {
   s.account=c.account;s.org=c.org;s.contextId=null;s.authority=authority;s.expires=this.now()+this.ttl;this.save(s);return this.public(s);
  }
  public(s){return{authenticated:Boolean(s?.account&&s.expires>this.now()),account:s?.account??null,org:s?.org??null,contextId:s?.contextId??null,expiresAt:s?.account?new Date(s.expires).toISOString():null};}
- async require(s){const guard=this.guard(s);guard();let authority;try{authority=await this.operator({org:s.org,account:s.account});}catch{this.logout(s);throw new AccessError('Current ENS operator verification is unavailable. Verify your wallet again when it recovers.',503);}guard();if(!authority.allowed){this.logout(s);throw new AccessError('Current ENS operator permission was removed',403);}s.authority=authority;return guard;}
+ async require(s){const guard=this.guard(s);guard();let authority;try{authority=await this.operator({org:s.org,account:s.account});}catch{guard();throw new AccessError('Current ENS operator verification is temporarily unavailable. Your wallet sign-in is retained; retry when verification recovers.',503);}guard();if(!authority.allowed){this.logout(s);throw new AccessError('Current ENS operator permission was removed',403);}s.authority=authority;return guard;}
 }
 
 // These adapters never read or write the preserved global selection.json.
