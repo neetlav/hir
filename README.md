@@ -4,7 +4,7 @@ An ENSv2-powered evidence layer for verifiable records, actions, and authority.
 
 ## Invoice evidence contracts and verification
 
-This snapshot contains the active shared invoice Evidence Ledger, structured-signature protocol, native ENS discovery, historical evidence verification, compiler entry point and isolated security tests. It publishes pre-existing local development for review. The customer website and Agents applications are not included yet.
+This snapshot contains the active shared invoice Evidence Ledger, structured-signature protocol, native ENS discovery, historical evidence verification, compiler entry point and isolated security tests. It publishes pre-existing local development for review. The invoice customer application is included; Agents are not part of this repository snapshot.
 
 An organization configures an existing ENSv2 resolver to authorize an issuer and the approved receiving address, payment asset and network. An invoice statement binds the exact final document hash, protected details, namespace, policy, revision, predecessor and expiry. One issuer signature and one direct publication transaction accept the evidence and create its ENS discovery record atomically. There is no per-invoice ENS token, resolver deployment or relayer requirement.
 
@@ -34,4 +34,8 @@ Clients must disable automatic CCIP-Read for this native onchain flow. Discovery
 
 The ledger enforces separate issuer and administration authority, approved receiving details, replay protection, revision links and invoice-name binding. Tests cover failed ENS-write rollback, signature/domain/policy failures, aliasing, authorization, altered document bytes, mismatched suppliers, canonical evidence failures and historical changes.
 
-Chained revisions and historical verification are included. Cancellation is not implemented. The supported organization input is a normalized ASCII .eth identity. Invoice issuers are ordinary code-free accounts. No customer UI, wallet sessions, PDF generation, hosted service, live deployment instructions or Agents implementation is part of this snapshot. Native ENS fixture provenance and dependency licenses are in vendor/ens-native/.
+Chained revisions and historical verification are included. Cancellation is not implemented. The supported organization input is a normalized ASCII .eth identity. Invoice issuers are ordinary code-free accounts. The customer application adds private wallet sessions, exact PDF generation and direct Sepolia publication. No hosted service or Agents implementation is included. Native ENS fixture provenance and dependency licenses are in vendor/ens-native/.
+
+## Invoice customer application
+
+Run `npm run app:start` after installing dependencies, then open http://127.0.0.1:4321. See [invoice application instructions](docs/INVOICE-APPLICATION.md) for one-time ENS setup, exact PDF review, direct wallet publication, recipient verification, recovery and limitations. Public Sepolia trust anchors and ABI provenance are documented in [config](config/README.md). This is a local Node server; no Cloudflare or online deployment is included.

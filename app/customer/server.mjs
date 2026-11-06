@@ -1,0 +1,11 @@
+import http from 'node:http';import path from 'node:path';import {readFile,mkdir,writeFile,open,unlink} from 'node:fs/promises';import {randomBytes} from 'node:crypto';
+import {InvoiceAccess} from './access.mjs';
+import {createCustomerHandler} from './http.mjs';
+import {loadPlatform,publicClient} from './platform.mjs';import {createInvoiceService} from './service.mjs';import {stringify} from './persistence.mjs';
+const port=Number(process.env.HIR_CUSTOMER_PORT||4321);if(!Number.isInteger(port)||port<1024||port>65535)throw Error('Invalid customer port');const baseURL='http://127.0.0.1:'+port,directory=path.resolve(process.env.HIR_CUSTOMER_STATE||'.local/hir-sepolia-website');
+if(!directory.toLowerCase().startsWith((path.resolve('.local')+path.sep).toLowerCase()))throw Error('Use a separate customer directory inside .local');await mkdir(directory,{recursive:true});const lock=path.join(directory,'process.lock');let lockFile;try{lockFile=await open(lock,'wx');await lockFile.writeFile(String(process.pid));await lockFile.close();}catch(e){if(e.code!=='EEXIST')throw e;const pid=Number(await readFile(lock,'utf8'));try{process.kill(pid,0);throw Error('Customer state is already in use');}catch(x){if(x.code!=='ESRCH')throw x;await unlink(lock);lockFile=await open(lock,'wx');await lockFile.writeFile(String(process.pid));await lockFile.close();}}
+const platform=await loadPlatform(),service=await createInvoiceService({directory,baseURL,client:publicClient(),platform}),control=randomBytes(32).toString('hex'),access=new InvoiceAccess({service,origin:baseURL});
+const controlFile=path.join(directory,'process-control');await writeFile(controlFile,control,{mode:0o600});
+const server=http.createServer(createCustomerHandler({service,platform,baseURL,access,control,stop:close}));
+
+let closing=false;async function close(){if(closing)return;closing=true;server.close();await service.wait();await unlink(lock).catch(()=>{});await unlink(controlFile).catch(()=>{});process.exit(0);}process.on('SIGINT',close);process.on('SIGTERM',close);server.listen(port,'127.0.0.1',()=>console.log(`HIR · History · Integrity · Responsibility · Sepolia customer website ${baseURL}`));

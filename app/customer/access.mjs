@@ -1,0 +1,38 @@
+import {randomBytes} from 'node:crypto';
+import {isAddress,getAddress,recoverMessageAddress} from 'viem';
+import * as p from '../../scripts/invoice-record/protocol.mjs';
+import {operations} from './operation.mjs';
+export class AccessError extends Error{constructor(message,status=403){super(message);this.status=status;}}
+const need=(value,message,status=403)=>{if(!value)throw new AccessError(message,status);},same=(a,b)=>String(a).toLowerCase()===String(b).toLowerCase(),random=()=>randomBytes(32).toString('hex');
+export class InvoiceAccess{
+ constructor({service,origin,chainId=11155111,now=()=>Date.now(),ttl=1800000}){Object.assign(this,{service,origin,chainId,now,ttl});this.sessions=new Map();}
+ create(){for(const [id,s]of this.sessions)if(s.expires<=this.now())this.sessions.delete(id);need(this.sessions.size<256,'Too many sessions; retry later',429);const s={id:random(),csrf:random(),epoch:0,expires:this.now()+this.ttl,account:null,org:null,challenge:null};this.sessions.set(s.id,s);return s;}
+ cookie(header=''){const id=header.split(';').map(x=>x.trim()).find(x=>x.startsWith('hir_invoice_session='))?.slice(20);const s=this.sessions.get(id);return s&&s.expires>this.now()?s:null;}
+ logout(s){if(s){s.epoch++;s.account=null;s.org=null;s.challenge=null;}}
+ public(s){return{authenticated:!!(s?.account&&s.expires>this.now()),account:s?.account||null,org:s?.org||null,expiresAt:s?.account?new Date(s.expires).toISOString():null};}
+ guard(s){const epoch=s?.epoch;return()=>need(s&&this.sessions.get(s.id)===s&&s.expires>this.now()&&s.account&&s.org&&s.epoch===epoch,'Connect and verify your wallet for this organization',401);}
+ challenge(s,{account,org,chainId}){need(s&&s.expires>this.now(),'Reload the page',401);this.logout(s);need(isAddress(account||'')&&!same(account,'0x'+'0'.repeat(40)),'Choose a valid wallet',400);need(chainId===this.chainId,'Select Ethereum Sepolia',400);org=p.organization(org);const expires=this.now()+120000,address=getAddress(account);const message=`${this.origin} requests wallet verification for HIR invoices.\n\nAccount: ${address}\nOrganization: ${org}\nURI: ${this.origin}/setup\nChain ID: ${this.chainId}\nNonce: ${random()}\nIssued At: ${new Date(this.now()).toISOString()}\nExpiration Time: ${new Date(expires).toISOString()}\n\nAuthorize private invoice workspace access. No transaction, invoice authorization or ENS change.`;s.challenge={account:address,org,message,expires,epoch:s.epoch};return{message,expiresAt:new Date(expires).toISOString()};}
+ recovery(account,org){return this.service.overview().records.some(d=>d.org===org&&d.status!=='confirmed'&&same(d.intent?.account||d.policy?.issuer,account))||this.service.setupRecords().some(s=>s.org===org&&!['confirmed','rejected'].includes(s.status)&&same(s.account,account));}
+ async verify(s,{signature}){const c=s?.challenge;if(s)s.challenge=null;need(c&&c.expires>this.now()&&c.epoch===s.epoch,'Wallet challenge expired or already used',401);let signer;try{signer=await recoverMessageAddress({message:c.message,signature});}catch{throw new AccessError('Invalid wallet proof',401);}need(same(signer,c.account),'Wallet proof does not match the challenged account',401);let caps;try{caps=await this.service.capabilities(c.org,c.account);}catch(error){if(!this.recovery(c.account,c.org))throw new AccessError('Current ENS authority is unavailable',503);caps={};}need(c.epoch===s.epoch&&s.expires>this.now(),'Wallet challenge invalidated',401);need(caps.canIssue||caps.canAdminister||caps.canConfigure||this.recovery(c.account,c.org),'This wallet has no invoice authority for this organization');s.account=c.account;s.org=c.org;s.expires=this.now()+this.ttl;return this.public(s);}
+ async authorize(s,{org,account,role='read',record,setup}={}){const guard=this.guard(s);guard();need(org===undefined||org===s.org,'Organization is outside this session');need(account===undefined||same(account,s.account),'Account is outside this session');if(record)need(record.org===s.org,'Record is outside this organization');if(setup)need(setup.org===s.org,'Operation is outside this organization');
+  const original=record?(record.intent?.account||record.policy.issuer):setup?.account;
+  // Recovery is tied to the original authenticated actor, including after role rotation.
+  if(role==='recover'){need(original&&same(original,s.account),'Only the original operation wallet can recover it');return guard;}
+  let caps;try{caps=await this.service.capabilities(s.org,s.account);}catch(error){guard();if(role==='read'&&record&&record.status!=='confirmed'&&same(original,s.account))return guard;throw error;}guard();
+  const reader=caps.canIssue||caps.canAdminister;
+  if(role==='read')need(reader||(record&&record.status!=='confirmed'&&same(original,s.account))||(!record&&this.recovery(s.account,s.org)),'Wallet cannot read this private workspace');
+  if(role==='issue')need(caps.canIssue&&(!record||same(record.policy.issuer,s.account)),'Current invoice issuer permission is required');
+  if(role==='setup')need(caps.canConfigure,'Required ENS resolver setup permissions are missing');
+  return guard;
+ }
+ async call(s,route,b={}){
+  const guard=this.guard(s);guard();need(b.org===undefined||b.org===s.org,'Organization is outside this session');need(b.account===undefined||same(b.account,s.account),'Account is outside this session');let record,setup;
+  if(['signature','publication','publication/hash','publication/rejected','publication/recheck'].includes(route))record=this.service.record(b.id);
+  if(['setup/status','setup/receipt','setup/rejected'].includes(route))setup=this.service.setupRecord(b.id);
+  const role=route==='draft'||route==='signature'||route==='publication'?'issue':route==='setup'?'setup':record||setup?'recover':'read';
+  const active=await this.authorize(s,{role,record,setup});const input={...b,org:s.org,account:s.account};let result;
+  await operations.run(active,async()=>{switch(route){case'draft':result=await this.service.prepareDraft(input);break;case'setup':result=await this.service.prepareSetup(input);break;case'signature':result=await this.service.attachSignature(b.id,b.signature);break;case'publication':result=await this.service.preparePublication(b.id,s.account);break;case'publication/hash':result=await this.service.attachHash(b.id,b.hash);break;case'publication/rejected':result=await this.service.rejected(b.id,b.code);break;case'publication/recheck':result=await this.service.reconcile(b.id);break;case'setup/status':result=await this.service.setupStatus(b.id);break;case'setup/receipt':result=await this.service.setupHash(b.id,b.hash);break;case'setup/rejected':result=await this.service.rejectSetup(b.id,b.code);break;default:throw new AccessError('Unknown operation',404);}});active();return result;
+ }
+ async workspace(s,org){const guard=await this.authorize(s,{org}),caps=await this.service.capabilities(s.org,s.account);guard();const value=await this.service.workspace(s.org);guard();if(!caps.canIssue&&!caps.canAdminister)value.records=value.records.filter(d=>d.status!=='confirmed'&&same(d.intent?.account||d.policy.issuer,s.account));return value;}
+ async record(s,id){const proof=this.guard(s);proof();const record=this.service.record(id);const guard=await this.authorize(s,{record});guard();return record;}
+}

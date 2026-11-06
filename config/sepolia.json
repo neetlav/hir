@@ -1,0 +1,10 @@
+{
+  "chainId": 11155111,
+  "ledger": "0xb80Cca2797CB98D2C8a00D6B8d10E5a2800D405C",
+  "runtimeCodeHash": "0xedfc73c2d0afd55b9bb2b087ba15d5856192a130864ea39548b0f6e19f84427c",
+  "universal": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe",
+  "ethRegistry": "0xd4ebcbbdf463c9c45784603db0ddd499bc44a8b4",
+  "policyKey": "hir.invoice.config.v2",
+  "recordKey": "hir.invoice.record",
+  "defaultToken": "0x240b0316Df57887DBBE58b586508b19e633a14aa"
+}
