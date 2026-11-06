@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F8F9FC;
+      color: #34445D;
+      -webkit-font-smoothing: antialiased;
+
+    }
+
+    .hir-wordmark-text {
+      font-family: 'Archivo', sans-serif;
+      font-weight: 800;
+      font-stretch: 125%;
+      font-size: 46px;
+      line-height: 1;
+      letter-spacing: 5.5px;
+      background: linear-gradient(105deg, #1769B3 0%, #F53293 50%, #B51C70 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .headline-gradient {
+      background: linear-gradient(115deg, #14243D 45%, #1769B3 80%, #B51C70 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-card-sheen {
+      background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,249,252,0.85) 100%);
+      backdrop-filter: blur(12px);
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 450, 'GRAD' 0, 'opsz' 24;
+    }
+
+    @media (max-width: 767px) {
+      .hir-wordmark-text {
+        font-size: 34px;
+        letter-spacing: 4px;
+      }
+    }
+
+.brand-gradient{display:inline-block;font-family:'Archivo',sans-serif;font-weight:800;font-stretch:125%;font-variation-settings:'wdth' 125;background:linear-gradient(105deg,#1769B3 0%,#F53293 50%,#B51C70 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.site-footer{width:100%;padding:24px 0;background:#F1F4FA;color:#647188}
+.footer-inner{max-width:1200px;margin:auto;padding:0 32px}
+.footer-main{display:flex;justify-content:space-between;align-items:center;gap:24px}
+.footer-description{max-width:448px}
+.footer-wordmark{font-size:36px;line-height:40px;letter-spacing:4.3px;text-decoration:none}
+.footer-description p{margin-top:8px;font-size:13px;line-height:18px}
+.site-footer nav{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:12px;font-weight:500;color:#44474D}
+.site-footer nav a:hover{color:#14243D}
+.footer-bottom{margin-top:12px;font-size:13px;line-height:18px}
+
+.site-footer{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.47}
+.skip{position:absolute;top:-80px;left:16px;z-index:100;background:white;padding:12px;color:#14243D}.skip:focus{top:8px}
+:focus-visible{outline:3px solid #1769B3;outline-offset:4px}
+section[id]{scroll-margin-top:16px}
+.mobile-navigation{position:relative}.mobile-navigation summary{cursor:pointer;list-style:none;padding:8px}.mobile-navigation summary::-webkit-details-marker{display:none}.mobile-navigation nav{position:absolute;right:0;top:100%;z-index:60;min-width:180px;display:grid;padding:8px;background:#fff;border:1px solid #E1E6EF;border-radius:12px;box-shadow:0 8px 24px #14243D15}.mobile-navigation nav a{padding:10px}
+@media(max-width:760px){.footer-inner{padding:0 20px}.footer-main{flex-direction:column;align-items:flex-start;gap:16px}.footer-bottom{margin-top:12px}}
+@media(max-width:639px){#top h1{font-size:34px}.hero-visual{min-width:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
