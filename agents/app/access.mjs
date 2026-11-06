@@ -80,12 +80,13 @@ export class WorkspaceAccess {
    case'evidence':selected(query.get('contextId'));result=await w.download(query.get('contextId'),query.get('id'));break;
    case'trust':selected(query.get('contextId'));result={...(await w.contexts.selected(query.get('contextId'))).trust,registration:w.setup.platform.registration};break;
    case'wallet/intent':{
+    need(body.retryOf===undefined,'Use the original failed request to review another attempt',400);
     const input=this.input(s,body);if(['policy','registration'].includes(body.operation))await this.plan(s,body.planId);else{need(body.operation==='anchor','Unsupported wallet operation',400);selected(body.contextId);await w.contexts.selected(body.contextId);}p.need(!w.live?.active,'Wait for the active exchange');result=await w.wallet.intent(input);break;
    }
-   case'wallet/dispatched':case'wallet/result':case'wallet/confirm':{
+   case'wallet/dispatched':case'wallet/result':case'wallet/confirm':case'wallet/retry':{
     const row=(await w.wallet.state()).operations[body.key];need(await this.ownsRow(s,row),'Wallet request is outside this signer and organization');
     if(row.operation==='anchor')selected(row.contextId);
-    if(route==='wallet/dispatched')result=await w.wallet.dispatch(body.key);else if(route==='wallet/result')result=await w.wallet.result(body);else result=await w.wallet.confirm(body.key);break;
+    if(route==='wallet/dispatched')result=await w.wallet.dispatch(body.key);else if(route==='wallet/result')result=await w.wallet.result(body);else if(route==='wallet/retry'){p.need(!w.live?.active,'Wait for the active exchange');result=await w.wallet.retry(body.key);}else result=await w.wallet.confirm(body.key);break;
    }
    default:throw new AccessError('Unknown Agents endpoint',404);
   }
