@@ -2,8 +2,10 @@
 
 import {Agent,Runner,tool,setTracingDisabled} from '@openai/agents-core';import {OpenAIProvider} from '@openai/agents-openai';import {z} from 'zod';
 
-import {lookupRegisteredPolicy as lookupPolicy} from '../src/registration.mjs';import {Engine,signRequest} from '../src/engine.mjs';import {SAMPLE} from '../src/analysis.mjs';import * as p from '../src/protocol.mjs';
+import {authorityReads} from './authority-reads.mjs';
+import {lookupRegisteredPolicy} from '../src/registration.mjs';import {Engine,signRequest} from '../src/engine.mjs';import {SAMPLE} from '../src/analysis.mjs';import * as p from '../src/protocol.mjs';
 export const MODEL='gpt-5.4-mini-2026-03-17';
+const lookupPolicy=options=>lookupRegisteredPolicy({...options,client:authorityReads(options.client)});
 const plain=x=>JSON.parse(p.json(x));
 function publicOutput(output){return output.filter(x=>['message','function_call'].includes(x.type)).map(x=>x.type==='function_call'?{type:x.type,id:x.id??null,callId:x.callId??null,name:x.name,arguments:x.arguments}:{type:'message',role:x.role,content:(x.content??[]).filter(c=>c.type==='output_text').map(c=>({type:'output_text',text:c.text}))});}
 export async function runExchange({config,task,accounts,store,runId,saveRun,requesterClient,receiverClient,openAIClient,guard=async()=>{},onProgress=()=>{}}){

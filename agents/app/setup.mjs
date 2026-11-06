@@ -21,7 +21,7 @@ export class Setup {
  async operator(input){const r=await inspectOrganization(this.input(input));return{...r,allowed:r.operator,role:p.eq(r.account,r.controller)?'organization-owner':r.canPublish?'agents-resolver-delegate':null};}
  async check(input){const c=await inspectOrganization(this.input(input)),keys=await this.identities();let reuse=null;
   if(c.raw!=='0x'){
-   try{const policy=p.decodePolicy(c.raw),trust={chainId:c.chainId,org:c.org,label:c.label,controller:c.controller,ownershipResource:c.ownershipResource,resolver:c.resolver,generation:policy.generation,requester:keys.requester,receiver:keys.receiver,universal:c.universal,registry:c.registry,codeHashes:c.codeHashes,evidence:keys.evidence,runtimeCodeHash:keys.runtimeCodeHash,policyHash:p.hash(c.raw),recordId:c.recordId},checkpoint=await lookupPolicy({client:this.client,trust,blockNumber:c.blockNumber,allowExpired:true});
+   try{const policy=p.decodePolicy(c.raw),trust={chainId:c.chainId,org:c.org,label:c.label,controller:c.controller,ownershipResource:c.ownershipResource,resolver:c.resolver,generation:policy.generation,requester:keys.requester,receiver:keys.receiver,universal:c.universal,registry:c.registry,codeHashes:c.codeHashes,evidence:keys.evidence,runtimeCodeHash:keys.runtimeCodeHash,policyHash:p.hash(c.raw),recordId:c.recordId},checkpoint=await lookupPolicy({client:authorityReads(this.client),trust,blockNumber:c.blockNumber,allowExpired:true});
     this.guard();const existing=await this.contexts.add({trust,policy,raw:c.raw,publication:{publisher:null,transactionHash:null,receipt:null,checkpoint,nativeObserved:true},source:'independent-native-ENS'});reuse={contextId:existing.id,name:existing.name,validity:validity(policy,c.timestamp)};
    }catch(error){if(error.status)throw error;}
   }
@@ -35,7 +35,7 @@ export class Setup {
  async plan(id){p.need(/^0x[0-9a-f]{64}$/.test(id),'Invalid policy plan');const plan=this.db.get('plan:'+id);p.need(plan,'Policy preview unavailable');const {id:stored,...core}=plan;p.need(stored===id&&objectHash(core)===id,'Policy preview integrity mismatch');return plan;}
  async current(profile){
   let checkpoint,policyStatus='unavailable';const checkedAt=new Date().toISOString();
-  try{checkpoint=await lookupPolicy({client:this.client,trust:profile.trust,allowExpired:true});policyStatus=validity(checkpoint.policy,BigInt(Math.floor(Date.now()/1000)));}catch{return{status:'unavailable',policyStatus,checkedAt,message:'Current native ENS verification is unavailable or changed. No authorization pass is assumed.'};}
+  try{checkpoint=await lookupPolicy({client:authorityReads(this.client),trust:profile.trust,allowExpired:true});policyStatus=validity(checkpoint.policy,BigInt(Math.floor(Date.now()/1000)));}catch{return{status:'unavailable',policyStatus,checkedAt,message:'Current native ENS verification is unavailable or changed. No authorization pass is assumed.'};}
   try{const registration=await registrationSnapshot({client:authorityReads(this.client),trust:profile.trust,anchors:this.platform.registration,blockNumber:checkpoint.blockNumber,checkpointHash:checkpoint.blockHash});
    return{status:registration.status==='registered'?policyStatus:'unregistered',policyStatus,checkedAt,checkpoint,registration};
   }catch{return{status:'unavailable',policyStatus,checkedAt,checkpoint,registration:{status:'unavailable'},message:'Name registration could not be verified. The policy observation is separate; new interactions remain unavailable.'};}

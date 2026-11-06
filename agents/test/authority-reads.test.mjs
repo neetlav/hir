@@ -1,8 +1,28 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {authorityReads} from '../app/authority-reads.mjs';
+import {authorityReads,withAuthorityFallback} from '../app/authority-reads.mjs';
 import {WalletSessions} from '../app/access.mjs';
 import {generatePrivateKey,privateKeyToAccount} from 'viem/accounts';
 const missing=()=>Object.assign(Error('block not found: 0x123'),{name:'ResourceNotFoundRpcError',code:-32001,details:'block not found: 0x123'});
+const checkpoint={number:123n,hash:'0x'+'a'.repeat(64)};
+function fallbackFixture(){const calls=[],primary={getChainId:async()=>11155111,getBlock:async()=>checkpoint,readContract:async()=>{calls.push('primary');throw missing();},getCode:async()=>{throw missing();}},backup={getChainId:async()=>11155111,getBlock:async()=>checkpoint,readContract:async input=>{calls.push(input);return true;},getCode:async()=> '0x1234'};return{calls,primary,backup,reads:()=>authorityReads(withAuthorityFallback(primary,backup))};}
+test('missing-block recovery validates the same chain and exact checkpoint without changing the pinned read',async()=>{
+ const f=fallbackFixture(),reads=f.reads(),input={blockNumber:123n,functionName:'hasRoles'};await reads.getChainId();await reads.getBlock();assert.equal(await reads.readContract(input),true);assert.equal(f.calls.filter(c=>c==='primary').length,3);assert.equal(f.calls.at(-1),input);assert.equal(await reads.getCode({blockNumber:123n}),'0x1234');assert.deepEqual(await reads.getBlock({blockNumber:123n}),checkpoint);
+});
+test('concurrent permission reads share one fallback checkpoint validation',async()=>{
+ const f=fallbackFixture();let validations=0;f.backup.getChainId=async()=>{validations++;return 11155111;};const reads=f.reads();await reads.getChainId();await reads.getBlock();assert.deepEqual(await Promise.all([reads.readContract({blockNumber:123n,args:['root']}),reads.readContract({blockNumber:123n,args:['key']})]),[true,true]);assert.equal(validations,1);assert.equal(f.calls.filter(c=>c==='primary').length,4);
+});
+for(const fault of ['wrong-chain','wrong-hash','older-block','reorg'])test('authority fallback refuses '+fault+' without accepting a permission result',async()=>{
+ const f=fallbackFixture();if(fault==='wrong-chain')f.backup.getChainId=async()=>1;else if(fault==='wrong-hash')f.backup.getBlock=async()=>({...checkpoint,hash:'0x'+'b'.repeat(64)});else if(fault==='older-block')f.backup.getBlock=async()=>({...checkpoint,number:122n});else{let observations=0;f.backup.getBlock=async()=>++observations===1?checkpoint:{...checkpoint,hash:'0x'+'b'.repeat(64)};}
+ const reads=f.reads();await reads.getChainId();await reads.getBlock();await assert.rejects(()=>reads.readContract({blockNumber:123n}));assert.equal(f.calls.filter(c=>c==='primary').length,3);
+});
+test('fallback results never authorize a later request from an earlier permission observation',async()=>{
+ const f=fallbackFixture();let allowed=true;f.backup.readContract=async()=>allowed;
+ for(const expected of [true,false]){allowed=expected;const reads=f.reads();await reads.getChainId();await reads.getBlock();assert.equal(await reads.readContract({blockNumber:123n}),expected);}
+});
+test('fallback never handles quota errors, deterministic reverts, unpinned reads or writes',async()=>{
+ for(const error of [Object.assign(Error('Request exceeds defined limit.'),{name:'LimitExceededRpcError',code:-32005}),Object.assign(Error('execution reverted'),{name:'ContractFunctionRevertedError'})]){const f=fallbackFixture();let backups=0;f.primary.readContract=async()=>{throw error;};f.backup.getChainId=async()=>{backups++;return 11155111;};const reads=f.reads();await reads.getChainId();await reads.getBlock();await assert.rejects(()=>reads.readContract({blockNumber:123n}),e=>e===error);assert.equal(backups,0);}
+ const f=fallbackFixture();let backups=0;f.backup.getChainId=async()=>{backups++;return 11155111;};const write=async()=>{throw missing();};f.primary.sendTransaction=write;const reads=f.reads();assert.equal(reads.sendTransaction,write);await assert.rejects(()=>reads.readContract({}));assert.equal(backups,0);
+});
 test('RPC backend lag retries the same pinned read without restarting the authority check',async()=>{
  const args={address:'public-address',functionName:'hasRoles',blockNumber:123n},received=[];
  const read=authorityReads({readContract:async input=>{received.push(input);if(received.length===1)throw Object.assign(Error('wrapped'),{cause:missing()});return true;}});

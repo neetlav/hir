@@ -31,9 +31,13 @@ Enter secrets only through Cloudflare's secret UI or interactive `wrangler secre
 | `HIR_AGENTS_REQUESTER_KEY` | Secret | Dedicated requester EOA private key |
 | `HIR_AGENTS_RECEIVER_KEY` | Secret | Distinct dedicated receiver EOA private key |
 | `HIR_AGENTS_REQUESTER_RPC` | Optional secret | Requester's own Sepolia RPC URL |
+| `HIR_AGENTS_REQUESTER_FALLBACK_RPC` | Optional secret | Secondary endpoint for the requester's missing-block authority reads, with the same chain/checkpoint checks |
 | `HIR_AGENTS_RECEIVER_RPC` | Optional secret | Receiver/verifier Sepolia RPC URL with historical state access |
+| `HIR_AGENTS_RECEIVER_FALLBACK_RPC` | Optional secret | Secondary endpoint for missing-block authority reads; must agree on chain and the exact selected block hash |
 
 Without custom RPC bindings, clients independently use the public Sepolia endpoint. Authority checks fail closed on errors. Model/signing secrets are never stored in SQLite or returned to browsers. No default organization, selected identity or prior evidence is bundled.
+
+For the default PublicNode endpoints, a missing pinned block can be checked through `https://sepolia.gateway.tenderly.co`. Recovery is limited to reads at the same already-observed block number and hash, with chain verification and canonical-hash checks. It does not substitute an older checkpoint, bypass a contract revert, retry a quota error or send transactions. Custom URLs keep their existing routing unless an explicit fallback binding is supplied for that client. No authority result is cached across requests.
 
 The derived signing addresses **must match the chosen existing native policy**. Secure manual entry of the existing dedicated keys is a deployment prerequisite. Windows account-encrypted local credentials are not portable Worker bindings; this project does not decrypt/export/copy them. If those keys are unavailable through your secure custody process, stop the existing-policy deployment. Do not silently generate replacements or republish an occupied policy. A new pair requires a separately authorized fresh agent label/policy.
 
