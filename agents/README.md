@@ -34,7 +34,7 @@ SQLite separates job/evidence records, metadata and expiring sessions. Signed bu
 
 Policy publication and evidence anchoring require separate human wallet approval. Exact intents are persisted before dispatch. An ambiguous wallet result requires reconciliation of the existing public hash; it is never automatically resent. Confirmation checks sender, destination, data, nonce, chain, canonical receipt, two confirmations and the actual policy/evidence commitment. An unrelated hash cannot replace the intended transaction.
 
-See [Cloudflare deployment](DEPLOYMENT.md) for the manual Free-plan trial setup and remaining remote checks. Source readiness and local tests do not establish online availability.
+See [Cloudflare deployment](DEPLOYMENT.md) for the manual Free-plan trial setup and remaining remote checks. [Registered ENS hierarchy setup](REGISTRATION.md) explains the shared organization prerequisite, four separate administrator wallet actions, Explorer checks and preservation of existing policy/evidence. Source readiness and local tests do not establish online availability.
 
 ## Protocol and independent verification
 
@@ -46,7 +46,7 @@ Choose expected trust independently of a received bundle and use an archive-capa
 npm --prefix agents run verify -- --trust /path/to/expected-trust.json --bundle /path/to/received-evidence.json --rpc https://your-archive-rpc.example
 ```
 
-The trust file supplies `chainId`, normalized `org`, `label`, `controller`, `ownershipResource`, `resolver`, `generation`, `requester`, `receiver`, `universal`, `registry`, `codeHashes`, `policyHash`, `recordId`, `evidence` and `runtimeCodeHash`. A downloaded evidence file supplies `bundle`, `sealSignature` and, when anchored, `anchor: {transactionHash, logIndex}`. Keep RPC credentials out of public files and command history. The CLI rebuilds the contract and requires its runtime hash to match the selected trust.
+The trust file supplies `chainId`, normalized `org`, `label`, `controller`, `ownershipResource`, `resolver`, `generation`, `requester`, `receiver`, `universal`, `registry`, `codeHashes`, `policyHash`, `recordId`, `evidence` and `runtimeCodeHash`. New registered-hierarchy bundles also require independently expected `registration` factory/implementation addresses and code hashes. A downloaded evidence file supplies `bundle`, `sealSignature` and, when anchored, `anchor: {transactionHash, logIndex}`. Keep RPC credentials out of public files and command history. The CLI rebuilds the contract and requires its runtime hash to match the selected trust.
 
 The deliberate `POST /api/public/verify` endpoint accepts a complete provided bundle and independently chosen trust; it does not retrieve private stored jobs by ID. It requires a page session/CSRF token but no organization login. Both verifiers distinguish authenticity, historical authority, receiver choice, recomputable output and onchain anchoring. A receipt alone does not establish compliance. Unavailable historical RPC data is not a pass.
 

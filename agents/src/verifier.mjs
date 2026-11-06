@@ -1,8 +1,9 @@
+import {registrationSnapshot} from './registration.mjs';
 import {recoverTypedDataAddress,encodeAbiParameters} from 'viem';
 import {authenticateEvent} from '../../scripts/shared/chain-evidence.mjs';
 import {lookupPolicy} from './ens.mjs';import {authenticateRequest} from './engine.mjs';import {objectHash,canonical,analyze} from './analysis.mjs';import * as p from './protocol.mjs';
 export async function verify({client,config,build,bundle,sealSignature,anchor,lookup=lookupPolicy}){
- const result={status:'unavailable',authenticity:'unchecked',authority:'unavailable',assessment:'unavailable',receiverDecision:'unchecked',execution:'unchecked',anchoring:anchor?'unchecked':'pending',violation:false,limits:'Signatures and anchors authenticate statements and commitments, not hidden execution, non-execution, complete logging or uninterrupted ENS ownership.'};
+ const result={status:'unavailable',authenticity:'unchecked',authority:'unavailable',assessment:'unavailable',registration:'not-asserted',receiverDecision:'unchecked',execution:'unchecked',anchoring:anchor?'unchecked':'pending',violation:false,limits:'Signatures and anchors authenticate statements and commitments, not hidden execution, non-execution, complete logging or uninterrupted ENS ownership.'};
  try{
   p.need(bundle.schema==='hir-agents-evidence-v1'&&Number(bundle.chainId)===Number(config.chainId)&&p.eq(bundle.evidence,config.evidence)&&bundle.org===config.org,'Wrong bundle domain');
   const r=await authenticateRequest({config,...bundle.envelope}),d=p.hydrate(bundle.decision,p.decisionFields),o=p.hydrate(bundle.outcome,p.outcomeFields);
@@ -19,6 +20,7 @@ export async function verify({client,config,build,bundle,sealSignature,anchor,lo
    try{checkpoint=await lookup({client,trust:config,blockNumber:d.checkpointNumber,checkpointHash:d.checkpointHash});}
    catch{result.authority='unavailable';result.message='Historical native ENS checkpoint unavailable or mismatched; authority has not passed';}
   }
+  if(checkpoint&&bundle.run?.registeredHierarchy){try{const hierarchy=await registrationSnapshot({client,trust:config,blockNumber:checkpoint.blockNumber,checkpointHash:checkpoint.blockHash});p.need(hierarchy.status==='registered','ENS names were not registered at the signed checkpoint');result.registration='registered';result.hierarchy=hierarchy;}catch{result.registration='unavailable';result.authority='unavailable';result.message='Registered-name authority could not be independently established at the signed checkpoint';checkpoint=null;}}
   if(checkpoint){
    p.need(p.eq(checkpoint.raw,bundle.assessment.checkpoint.raw)&&p.eq(checkpoint.policyHash,r.policyHash),'Offchain policy bytes/hash differ from authoritative historical ENS');
    p.need(p.eq(checkpoint.blockHash,d.checkpointHash)&&BigInt(checkpoint.blockNumber)===d.checkpointNumber,'Historical checkpoint mismatch');

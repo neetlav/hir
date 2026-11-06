@@ -56,7 +56,7 @@ export class WorkspaceAccess {
   const scoped=new Workspace({contexts,setup,wallet,runtime:base.runtime,db:base.db,build:base.build,guard,actor:session.account,runExchange:async options=>base.executeRuntime({...options,guard:async()=>{await this.sessions.require(session);guard();options.lease();}}),walletView:state=>this.walletView(session,state)});
   return scoped;
  }
- async rowOrg(row){if(row.operation==='policy')return(await this.workspace.setup.plan(row.planId)).trust.org;if(row.operation==='anchor')return(await this.workspace.contexts.get(row.contextId)).trust.org;return null;}
+ async rowOrg(row){if(['policy','registration'].includes(row.operation))return(await this.workspace.setup.plan(row.planId)).trust.org;if(row.operation==='anchor')return(await this.workspace.contexts.get(row.contextId)).trust.org;return null;}
  async ownsRow(s,row){return Boolean(row&&p.eq(row.transaction?.from,s.account)&&await this.rowOrg(row)===s.org);}
  async walletView(s,state){const operations={};for(const [key,row] of Object.entries(state.operations))if(await this.ownsRow(s,row))operations[key]=row;return{operations};}
  input(s,body){need(body.org===undefined||body.org===s.org,'Organization differs from the authenticated session');need(body.account===undefined||p.eq(body.account,s.account),'Account differs from the verified wallet');return{...body,org:s.org,account:s.account};}
@@ -71,15 +71,16 @@ export class WorkspaceAccess {
    case'workspace':result={...await w.status(),session:this.sessions.public(s)};break;
    case'identities':result=await w.setup.identities();break;
    case'setup/check':result=await w.setup.check(this.input(s,body));break;
+   case'setup/registration-prepare':p.need(!w.live?.active,'Wait for the active exchange');result=await w.setup.prepareRegistration(this.input(s,body));break;
    case'setup/prepare':p.need(!w.live?.active,'Wait for the active exchange');result=await w.setup.prepare(this.input(s,body));break;
    case'context/select':result=await w.select(body.contextId);break;
    case'policy/check':selected(body.contextId);result=await w.checkPolicy(body.contextId);break;
    case'run':selected(body.contextId);this.input(s,body);result=await w.run(body);break;
    case'verify':selected(body.contextId);result=await w.verify(body.contextId,body.id);break;
    case'evidence':selected(query.get('contextId'));result=await w.download(query.get('contextId'),query.get('id'));break;
-   case'trust':selected(query.get('contextId'));result=(await w.contexts.selected(query.get('contextId'))).trust;break;
+   case'trust':selected(query.get('contextId'));result={...(await w.contexts.selected(query.get('contextId'))).trust,registration:w.setup.platform.registration};break;
    case'wallet/intent':{
-    const input=this.input(s,body);if(body.operation==='policy')await this.plan(s,body.planId);else{need(body.operation==='anchor','Unsupported wallet operation',400);selected(body.contextId);await w.contexts.selected(body.contextId);}p.need(!w.live?.active,'Wait for the active exchange');result=await w.wallet.intent(input);break;
+    const input=this.input(s,body);if(['policy','registration'].includes(body.operation))await this.plan(s,body.planId);else{need(body.operation==='anchor','Unsupported wallet operation',400);selected(body.contextId);await w.contexts.selected(body.contextId);}p.need(!w.live?.active,'Wait for the active exchange');result=await w.wallet.intent(input);break;
    }
    case'wallet/dispatched':case'wallet/result':case'wallet/confirm':{
     const row=(await w.wallet.state()).operations[body.key];need(await this.ownsRow(s,row),'Wallet request is outside this signer and organization');

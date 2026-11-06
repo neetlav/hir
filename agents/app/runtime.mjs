@@ -2,7 +2,7 @@
 
 import {Agent,Runner,tool,setTracingDisabled} from '@openai/agents-core';import {OpenAIProvider} from '@openai/agents-openai';import {z} from 'zod';
 
-import {lookupPolicy} from '../src/ens.mjs';import {Engine,signRequest} from '../src/engine.mjs';import {SAMPLE} from '../src/analysis.mjs';import * as p from '../src/protocol.mjs';
+import {lookupRegisteredPolicy as lookupPolicy} from '../src/registration.mjs';import {Engine,signRequest} from '../src/engine.mjs';import {SAMPLE} from '../src/analysis.mjs';import * as p from '../src/protocol.mjs';
 export const MODEL='gpt-5.4-mini-2026-03-17';
 const plain=x=>JSON.parse(p.json(x));
 function publicOutput(output){return output.filter(x=>['message','function_call'].includes(x.type)).map(x=>x.type==='function_call'?{type:x.type,id:x.id??null,callId:x.callId??null,name:x.name,arguments:x.arguments}:{type:'message',role:x.role,content:(x.content??[]).filter(c=>c.type==='output_text').map(c=>({type:'output_text',text:c.text}))});}
@@ -10,7 +10,7 @@ export async function runExchange({config,task,accounts,store,runId,saveRun,requ
  p.need(config.chainId===11155111&&config.evidence,'Confirmed Sepolia Agents configuration required');p.need(typeof task==='string'&&task.length>0&&task.length<=1000,'Bounded task required');
  const startedAt=new Date().toISOString(),events=[];let jobId=null,sequence=0,finished=false;
  p.need(p.eq(accounts.requester.address,config.requester)&&p.eq(accounts.receiver.address,config.receiver),'Dedicated runtime identities do not match published configuration');
- const engine=new Engine({config,client:receiverClient,account:accounts.receiver,store});
+ const engine=new Engine({config,client:receiverClient,account:accounts.receiver,store,lookup:lookupPolicy});
  const runRecord={kind:'live-llm',runId,startedAt,model:MODEL,sdk:'@openai/agents@0.21.0',task,input:SAMPLE,limits:{requesterMaxTurns:4,receiverMaxTurns:5,maxModelCalls:9,modelTimeoutMs:30000,exchangeTimeoutMs:150000,maxTokensPerCall:1200,parallelToolCalls:false,tracingDisabled:true},events,status:'running'};
  const log=async event=>{const entry={sequence:sequence++,at:new Date().toISOString(),...event};events.push(plain(entry));await saveRun(runRecord);if(jobId&&!finished)await engine.activity(jobId,entry);await onProgress(entry);};
  await saveRun(runRecord);setTracingDisabled(true);
@@ -42,7 +42,7 @@ export async function runExchange({config,task,accounts,store,runId,saveRun,requ
   const state=await store.load(jobId),second=await runner.run(receiver,'Assess this signed request and decide whether to act. Request: '+p.json(state.envelope.request),{maxTurns:5,signal});await log({actor:'Agent 2',type:'public-message',publicText:String(second.finalOutput??'')});
   const end=await store.load(jobId);p.need(end.outcome,'Receiver did not finish a signed outcome; actual behavior retained, no scripted fallback');
   runRecord.status='completed';runRecord.completedAt=new Date().toISOString();await log({actor:'Runtime',type:'run-completed',data:{modelCalls,requestId:jobId}});
-  await guard();const sealed=await engine.seal(jobId,{kind:'live-llm',runId,model:MODEL,sdk:runRecord.sdk,startedAt,completedAt:runRecord.completedAt,task,modelCalls,limits:runRecord.limits});finished=true;
+  await guard();const sealed=await engine.seal(jobId,{kind:'live-llm',registeredHierarchy:true,runId,model:MODEL,sdk:runRecord.sdk,startedAt,completedAt:runRecord.completedAt,task,modelCalls,limits:runRecord.limits});finished=true;
   return{runId,requestId:jobId,credits:sealed.envelope.request.credits,assessment:sealed.assessment.status,accepted:sealed.decision.accepted,phase:sealed.phase,violation:sealed.violation,bundleHash:sealed.sealed.bundleHash,anchoring:'pending'};
  }catch(error){runRecord.status='failed';runRecord.completedAt=new Date().toISOString();await log({actor:'Runtime',type:'run-failed',publicText:'The bounded agent run did not complete. Actual progress is retained; no automatic retry occurred.'});throw error;}
  finally{await provider.close();}
