@@ -4,7 +4,7 @@ import {artifacts,nativeData} from './ens.mjs';
 import * as p from './protocol.mjs';
 
 // Read-only authority inspection. A public address is not proof of caller control.
-export async function inspectOrganization({client,org,label='requester',account,chainId,universal,registry}){
+export async function inspectOrganization({client,org,label='requester',account,chainId,universal,registry,operatorOnly=false}){
  const names=p.names(org,label);for(const address of [account,universal,registry])p.need(isAddress(address)&&!p.eq(address,zeroAddress),'Explicit nonzero authority addresses required');
  p.need(Number.isSafeInteger(chainId)&&chainId>0&&await client.getChainId()===chainId,'Wrong ENS RPC chain');
  const a=await artifacts(),block=await client.getBlock(),at={blockNumber:block.number};
@@ -14,8 +14,11 @@ export async function inspectOrganization({client,org,label='requester',account,
  p.need(p.eq(await read(root,a.RootRegistry.abi,'getSubregistry',['eth']),registry),'Unexpected authoritative ETH registry');
  const state=await read(registry,a.ETHRegistry.abi,'getState',[BigInt(p.textHash(org.split('.')[0]))]);
  p.need(state.status===2&&state.expiry>block.timestamp,'Existing organization is inactive or expired');
+ const authority={org,account,chainId,universal,registry,controller:state.latestOwner,ownershipResource:state.resource,organizationExpiry:state.expiry,blockNumber:block.number,blockHash:block.hash,timestamp:block.timestamp};
+ if(operatorOnly&&p.eq(state.latestOwner,account)){p.need(p.eq((await client.getBlock(at)).hash,block.hash),'Organization authority checkpoint changed during inspection');return{...authority,operator:true,canPublish:false};}
  const resolver=await read(registry,a.ETHRegistry.abi,'getResolver',[org.split('.')[0]]);p.need(!p.eq(resolver,zeroAddress),'Authoritative resolver required');
  const [rootData,keyData]=await Promise.all([0n,BigInt(p.textHash(p.KEY))].map(resource=>read(resolver,a.PermissionedResolverImpl.abi,'hasRoles',[resource,1n<<24n,account])));
+ if(operatorOnly){p.need(p.eq((await client.getBlock(at)).hash,block.hash),'Organization authority checkpoint changed during inspection');return{...authority,resolver,operator:rootData||keyData,canPublish:rootData||keyData};}
  const record=await nativeData({client,universal,abi:a.UniversalResolverV2.abi,name:names.agent,key:p.KEY,...at});
  p.need(p.eq(record.resolver,resolver),'Agent routes through an unexpected resolver');
  const recordId=await read(resolver,a.PermissionedResolverImpl.abi,'getRecordId',[names.agentNode]),codeHashes={};

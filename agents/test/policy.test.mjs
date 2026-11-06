@@ -15,6 +15,13 @@ test('initial native policy preparation is explicit, role-bound and non-destruct
  const input={client:f.client,org:f.trust.org,label:'review',account:f.admin.address,chainId:31337,universal:f.universal.address,registry:f.registry.address,requester:f.requester.address,receiver:f.receiver.address,evidence:evidence.address,runtimeCodeHash:build.runtimeCodeHash};
  const original=await lookupPolicy({client:f.client,trust:f.trust,blockNumber:(await f.client.getBlock()).number});
  await t.test('owner and explicit native resolver/key binding are observed independently',async()=>{const r=await inspectOrganization(input);assert.equal(r.operator,true);assert.equal(r.canPublish,true);assert.equal(r.controller,f.admin.address);assert.equal(r.raw,'0x');assert.equal(r.recordId,0n);assert.equal(r.name,'review.agents.'+f.trust.org);});
+ await t.test('operator rechecks read current authority without resolving an unrelated agent policy',async()=>{
+  const calls=[],client={...f.client,readContract:async args=>{calls.push(args.functionName);return f.client.readContract(args);},getCode:async()=>{throw Error('Operator check must not fetch policy dependency code');}};
+  assert.equal((await inspectOrganization({...input,client,operatorOnly:true})).operator,true);assert.deepEqual(calls,['isENSv2','ROOT_REGISTRY','getSubregistry','getState']);
+  const delegate={...input,client,operatorOnly:true,account:f.other.address};assert.equal((await inspectOrganization(delegate)).operator,false);await f.send(f.resolver,'grantRootRoles',[1n<<24n,f.other.address]);assert.equal((await inspectOrganization(delegate)).operator,true);await f.send(f.resolver,'revokeRootRoles',[1n<<24n,f.other.address]);assert.equal((await inspectOrganization(delegate)).operator,false);
+  await assert.rejects(()=>inspectOrganization({...input,operatorOnly:true,chainId:1}),/chain/);
+  const changed={...client,getBlock:async args=>{const block=await f.client.getBlock(args);return args?.blockNumber?{...block,hash:p.zeroHash}:block;}};await assert.rejects(()=>inspectOrganization({...input,client:changed,operatorOnly:true}),/checkpoint changed/);
+ });
  await t.test('unrelated account, wrong chain/registry and malformed names do not prepare',async()=>{
   await assert.rejects(()=>preparePolicy({...input,account:f.other.address}),/SET_DATA/);
   await assert.rejects(()=>preparePolicy({...input,chainId:1}),/chain/);

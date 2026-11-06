@@ -18,7 +18,7 @@ export class Setup {
   return{org,controller:state.latestOwner,resolver,expiry:state.expiry,blockNumber:block.number,blockHash:block.hash,checkedAt:new Date().toISOString()};
  }
  input(input){return{...input,client:authorityReads(this.client),chainId:this.platform.chainId,universal:this.platform.universal,registry:this.platform.registry};}
- async operator(input){const r=await inspectOrganization(this.input(input));return{...r,allowed:r.operator,role:p.eq(r.account,r.controller)?'organization-owner':r.canPublish?'agents-resolver-delegate':null};}
+ async operator(input){const r=await inspectOrganization({...this.input(input),operatorOnly:true});return{...r,allowed:r.operator,role:p.eq(r.account,r.controller)?'organization-owner':r.canPublish?'agents-resolver-delegate':null};}
  async check(input){const c=await inspectOrganization(this.input(input)),keys=await this.identities();let reuse=null;
   if(c.raw!=='0x'){
    try{const policy=p.decodePolicy(c.raw),trust={chainId:c.chainId,org:c.org,label:c.label,controller:c.controller,ownershipResource:c.ownershipResource,resolver:c.resolver,generation:policy.generation,requester:keys.requester,receiver:keys.receiver,universal:c.universal,registry:c.registry,codeHashes:c.codeHashes,evidence:keys.evidence,runtimeCodeHash:keys.runtimeCodeHash,policyHash:p.hash(c.raw),recordId:c.recordId},checkpoint=await lookupPolicy({client:authorityReads(this.client),trust,blockNumber:c.blockNumber,allowExpired:true});

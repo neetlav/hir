@@ -4,6 +4,7 @@ const fallbackKey=Symbol('authority-read-fallback');
 export const withAuthorityFallback=(client,fallback)=>({...client,[fallbackKey]:fallback});
 function causes(error){const result=[];for(let e=error;e&&!result.includes(e);e=e.cause)result.push(e);return result;}
 function unavailableBlock(error){const chain=causes(error);return !chain.some(e=>['ContractFunctionRevertedError','ExecutionRevertedError'].includes(e.name))&&chain.some(e=>e.name==='BlockNotFoundError'||e.name==='ResourceNotFoundRpcError'&&/block not found|unknown block|header not found/i.test(e.details??e.message??''));}
+function providerLimited(error){const chain=causes(error);return !chain.some(e=>['ContractFunctionRevertedError','ExecutionRevertedError'].includes(e.name)||/too many subrequests/i.test(e.message??''))&&chain.some(e=>e.code===-32005||e.name==='LimitExceededRpcError'||e.name==='HttpRequestError'&&e.status===429);}
 function transient(error){
  const chain=causes(error);
  if(chain.some(e=>['ContractFunctionRevertedError','ExecutionRevertedError'].includes(e.name)))return false;
@@ -26,7 +27,7 @@ export function authorityReads(client){
  for(const method of methods)if(typeof client[method]==='function')reads[method]=async(...args)=>{
   if(recovery&&args[0]?.blockNumber===checkpoint.number)return recover(method,args);
   for(;;)try{return observe(method,await client[method](...args));}catch(error){
-   if(!remaining||!transient(error)){if(fallback&&unavailableBlock(error)&&args[0]?.blockNumber!==undefined&&blocks.has(String(args[0].blockNumber)))return recover(method,args);throw error;}
+   if(!remaining||!transient(error)){if(fallback&&(unavailableBlock(error)||providerLimited(error))&&args[0]?.blockNumber!==undefined&&blocks.has(String(args[0].blockNumber)))return recover(method,args);throw error;}
    remaining--;await new Promise(resolve=>setTimeout(resolve,250));
   }
  };

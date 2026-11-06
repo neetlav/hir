@@ -19,8 +19,14 @@ test('fallback results never authorize a later request from an earlier permissio
  const f=fallbackFixture();let allowed=true;f.backup.readContract=async()=>allowed;
  for(const expected of [true,false]){allowed=expected;const reads=f.reads();await reads.getChainId();await reads.getBlock();assert.equal(await reads.readContract({blockNumber:123n}),expected);}
 });
-test('fallback never handles quota errors, deterministic reverts, unpinned reads or writes',async()=>{
- for(const error of [Object.assign(Error('Request exceeds defined limit.'),{name:'LimitExceededRpcError',code:-32005}),Object.assign(Error('execution reverted'),{name:'ContractFunctionRevertedError'})]){const f=fallbackFixture();let backups=0;f.primary.readContract=async()=>{throw error;};f.backup.getChainId=async()=>{backups++;return 11155111;};const reads=f.reads();await reads.getChainId();await reads.getBlock();await assert.rejects(()=>reads.readContract({blockNumber:123n}),e=>e===error);assert.equal(backups,0);}
+test('provider limits recover only at the independently verified checkpoint',async()=>{
+ for(const error of [Object.assign(Error('Request exceeds defined limit.'),{name:'LimitExceededRpcError',code:-32005}),Object.assign(Error('Too many requests'),{name:'HttpRequestError',status:429})]){
+  const f=fallbackFixture();f.primary.readContract=async()=>{throw error;};const reads=f.reads();await reads.getChainId();await reads.getBlock();assert.equal(await reads.readContract({blockNumber:123n}),true);
+  const bad=fallbackFixture();bad.primary.readContract=f.primary.readContract;bad.backup.getBlock=async()=>({...checkpoint,hash:'0x'+'b'.repeat(64)});const mismatch=bad.reads();await mismatch.getChainId();await mismatch.getBlock();await assert.rejects(()=>mismatch.readContract({blockNumber:123n}),/checkpoint differs/);
+ }
+});
+test('fallback never handles Worker quotas, deterministic reverts, unpinned reads or writes',async()=>{
+ for(const error of [Error('Too many subrequests'),Object.assign(Error('execution reverted'),{name:'ContractFunctionRevertedError'})]){const f=fallbackFixture();let backups=0;f.primary.readContract=async()=>{throw error;};f.backup.getChainId=async()=>{backups++;return 11155111;};const reads=f.reads();await reads.getChainId();await reads.getBlock();await assert.rejects(()=>reads.readContract({blockNumber:123n}),e=>e===error);assert.equal(backups,0);}
  const f=fallbackFixture();let backups=0;f.backup.getChainId=async()=>{backups++;return 11155111;};const write=async()=>{throw missing();};f.primary.sendTransaction=write;const reads=f.reads();assert.equal(reads.sendTransaction,write);await assert.rejects(()=>reads.readContract({}));assert.equal(backups,0);
 });
 test('RPC backend lag retries the same pinned read without restarting the authority check',async()=>{
